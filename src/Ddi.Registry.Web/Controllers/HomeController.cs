@@ -1,39 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Ddi.Registry.Web.Models;
-using Ddi.Registry.Data;
 
 namespace Ddi.Registry.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
-        {
-            ViewBag.Message = "Welcome to ASP.NET MVC!";
-
-            return View();
-        }
-
-        public ActionResult About()
+        public IActionResult Index()
         {
             return View();
         }
 
-		public ActionResult Tools()
-		{
-			return View();
-		}
+        public IActionResult Privacy()
+        {
+            return View();
+        }
 
-		public ActionResult RegistrySource()
-		{
-			return View();
-		}
+
+        public ActionResult Tools()
+        {
+            return View();
+        }
+
+        public ActionResult RegistrySource()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
 
         [HttpPost]
-        public ActionResult Index(SearchModel model)
+        public IActionResult Index(SearchModel model)
         {
             if (ModelState.IsValid)
             {

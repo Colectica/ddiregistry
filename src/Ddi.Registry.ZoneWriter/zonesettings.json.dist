@@ -1,0 +1,24 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=ddi_registry;Username=postgres;Password=yourpassword;",
+    "ProviderName": "Npgsql"
+  },
+  "ZoneWriter": {
+    "BaseZone": "registry.ddialliance.org",
+    "MasterNameserver": "ns001.dnsmax.com",
+    "Nameservers": [
+      "ns000.dnsmax.com",
+      "ns101.dnsmax.com",
+      "ns120.dnsmax.com",
+      "ns001.dnsmax.com"
+    ],
+    "DefaultARecord": "69.54.36.97",
+    "ZoneFileLocation": "E:\\temp\\",
+    "ExtraRecords": "E:\\temp\\extra-records.txt"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning"
+    }
+  }
+}

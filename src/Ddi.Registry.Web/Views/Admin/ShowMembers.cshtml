@@ -1,4 +1,5 @@
-﻿@model MembershipUserCollection
+﻿@using Ddi.Registry.Data
+@model List<ApplicationUser>
 @{
 	ViewBag.Title = "Index";
 }
@@ -6,44 +7,46 @@
 	Users</h2>
 @Html.ValidationSummary()
 <p>
-	@Html.ActionLink("Create User", "CreateMember")
+	@Html.ActionLink("Create User", "Register", "Account")
 </p>
-<table width="100%">
-	<tr>
-		<th></th><th></th>
-		<th>
-			User Name
-		</th>
-		<th>
-			Email
-		</th>
-		<th>
-			Last Login
-		</th>
-		<th>
-			Comment
-		</th>
-	</tr>
-	@foreach (MembershipUser item in Model) {
-		<tr>
-			<td>
-				@Html.ActionLink("Edit", "EditMember", new { id = item.ProviderUserKey })
-			</td>
-			<td>
-				@Html.ActionLink("Delete", "DeleteMember", new { id = item.ProviderUserKey })
-			</td>
-			<td style="min-width: 100px">
-				@item.UserName
-			</td>
-			<td style="min-width: 75px">
-				@item.Email
-			</td>
-			<td style="min-width: 100px">
-				@String.Format("{0:d}", item.LastLoginDate)
-			</td>
-			<td style="width: 100%">
-				@item.Comment
-			</td>
-		</tr>
-	}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Organization
+            </th>
+            <th>
+                Email
+            </th>
+            <th></th>
+            <!--<th>
+        Last Login
+    </th>
+    <th>
+        Comment
+    </th>-->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (ApplicationUser item in Model)
+        {
+        <tr>
+            <td>
+                @item.Name
+            </td>
+            <td>
+                @item.Organization
+            </td>
+            <td>
+                @item.Email
+            </td>
+            <td>
+                @Html.ActionLink("Impersonate User", "ImpersonateUser", new { id = item.Id })
+            </td>
+        </tr>
+        }
+    </tbody>
 </table>

@@ -1,117 +1,102 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-@if (!string.IsNullOrWhiteSpace(ViewBag.Title))
-{
-	<title>@ViewBag.Title - DDI Registry</title>
-}
-else
-{
-	<title>DDI Registry</title>
-}
-	
-    
-<link type="text/css" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.2/cerulean/bootstrap.min.css" media="all" />
-<style>
-@@import url("/Content/overrides.css");
-</style>
-<style>
-@@import url("/Content/font.css");
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DDI Agency Registry</title>
+    <link rel="shortcut icon" href="~/assets/ddiicon.png" type="image/png" />
 
-    <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />	
-    <script src="@Url.Content("~/Scripts/jquery-1.4.4.min.js")" type="text/javascript"></script>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
+    </environment>
+    <link rel="stylesheet" href="~/css/site.css" />
     <script src='https://www.google.com/recaptcha/api.js'></script>
 </head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="https://www.ddialliance.org/"><img src="~/assets/logo.png" alt="DDI" width="150" /></a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DDI Agency Registry</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                    <ul class="navbar-nav flex-grow-1">
+                        <!--<li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </li>
+    -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="https://www.ddialliance.org/">DDI Alliance</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Develop
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item text-dark" asp-area="" asp-controller="Home" asp-action="Tools">Registry Tools</a>
+                                <a class="dropdown-item text-dark" asp-area="" asp-controller="Home" asp-action="RegistrySource">Registry Deployment</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item  text-dark" href="https://github.com/Colectica/ddiregistry">DDI Registry GitHub</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
 
-<body class="html front not-logged-in no-sidebars page-node page-node- page-node-77 node-type-page navbar-is-static-top" >
+                        </li>
+                        <li class="nav-item">
 
-  
-<header id="navbar" role="banner" class="navbar navbar-static-top navbar-inverse">
-  <div class="container">
-    <div class="navbar-header">
-            <a class="logo navbar-btn pull-left" href="/" title="Home"><img src="/Content/img/logo.png" alt="Home" /></a>    
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
 
-       <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      </div>
-      
+    <footer class="border-top footer" style="background-color: #054E72">
+        <div class="container text-white">
+            &copy; @DateTime.UtcNow.Year - DDI Alliance Agency Registry - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
 
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-							<li>@Html.ActionLink("Home", "Index", "Home")</li>
-							<li>@Html.ActionLink("Manage", "Index", "Manage")</li>
-							<li>@Html.ActionLink("Tools", "Tools", "Home")</li>
-							<li>@Html.ActionLink("Help", "Index", "Help")</li>
-      </ul>
-      
-      <ul class="nav navbar-nav navbar-right">
-        @Html.Partial("_LogOnPartial")
-      </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</header>
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
+        </script>
+    </environment>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
-
-<div class="main-container container">
-
-  <header role="banner" id="page-header">
-    
-      </header> <!-- /#page-header -->
-
-  <div class="row">
-
-    
-    <section class="col-sm-12">
-                  <a id="main-content"></a>
-                                                               
-       
-       
-<div class="row">
-<div class="col-md-12">	
-@RenderBody()    
-</div>
-</div>       
-       
-       
-       
-       
-       
-       
-
-
-
-  		
-      
-    </section>
-
-    
-  </div>
-</div>
-<footer class="footer container">
-    <div class="region region-footer well well-lg">
-    <section id="block-block-15" class="block block-block clearfix">
-
-      
-  <div class="row">
-
-	<div class="col-md-3">Have questions? <br /><a href="mailto:ddiregistry@umich.edu"><span class="glyphicon glyphicon-envelope"></span> Contact the DDI Registry team</a></div>
-
-	<div class="col-md-6">&copy; @DateTime.Now.Year DDI Alliance</div>
-
-	<div class="col-md-3">&nbsp;</div>
-</div>
-
-</section> <!-- /.block -->
-  </div>
-</footer>
+    @RenderSection("Scripts", required: false)
 </body>
-</html>
-
-
 </html>

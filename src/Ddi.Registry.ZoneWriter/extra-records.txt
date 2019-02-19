@@ -1,0 +1,6 @@
+﻿; Extra custom records for the main zone
+		IN	TXT	"v=spf1 include:mailgun.org ~all"
+krs._domainkey	IN	TXT	"k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC2cWwOqBaLtQc/rWiPyEVSLobpkls0x3N2seGp+R8KImXTyfrm7T6wrUaMuMMPNYPWOxgh6VHGHs8/y4P7SHSo+3FiyUexhPMshgYJ4zFSOtKox79hztl3+VDHlfkYU6ssxcbKH3hbGJh5urBbphUycDmP5tO8kUjKaufSgzY4KwIDAQAB"
+		IN	MX	10	mxa.mailgun.org.
+		IN	MX	10	mxb.mailgun.org.
+

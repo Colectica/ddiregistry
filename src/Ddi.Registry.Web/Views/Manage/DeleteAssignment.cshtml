@@ -1,18 +1,18 @@
 ﻿@model Ddi.Registry.Data.Assignment
 
 @{
-    ViewBag.Title = "Delete " + Model.Name;
+    ViewBag.Title = "Delete " + Model.AssignmentId;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Delete @Model.Name</h2>
+<h2>Delete @Model.AssignmentId</h2>
 
 <h3>Are you sure you want to delete this assignment?</h3>
 
 <fieldset>
 
     <div class="display-label">Name</div>
-    <div class="display-field">@Model.Name</div>
+    <div class="display-field">@Model.AssignmentId</div>
 
     <div class="display-label">DateCreated</div>
     <div class="display-field">@String.Format("{0:g}", Model.DateCreated)</div>

@@ -1,18 +1,29 @@
-﻿@model Ddi.Registry.Web.Models.SearchModel
-           
-@{
+﻿@{
+    ViewData["Title"] = "Home Page";
 }
 
-<h2>Welcome to the DDI Registry</h2>
+<div>
+    <h1 class="display-4">Welcome to the DDI Registry</h1>
+    <partial name="SearchControl" model="new SearchModel()" />
 
-@Html.Partial("SearchControl", Model)
+    <h3>About</h3>
+    <p>
+        <b>The DDI Agency Registry</b> is a component of a <em>free</em> global unique identifier system for metadata producing organizations.
+        The registry system provides an agency identifier which acts as both a namespace in a globally unique id as well as a pointer for distributed service resolution.
+        <br />
+        Based on <b>ISO/IEC 11179 Part 6</b> International Registration Data Identifiers (11179 IRDIs), <b>DDI agency identifiers</b> are used as the <b>Registration Authority</b> (11179 RA) in a IRDI and in DDI URNs.
+    </p>
+    <p>
+        <b>The DDI Agency Resolver</b> is a free DNS SRV record-based resolution service for DDI agency identifiers, and enables discovery of web services and data services provided by an agency.
+    </p>
 
-<h2>Request a DDI agency ID</h2>
-<p>Follow these three quick steps to obtain a DDI agency identifier</p>
-<ol>
-<li>Create an account for your organization. <a href="/Account/Register">Register here.</a></li>
-<li>Request an Agency ID under the <a href="/Manage">Manage</a> tab.</li>
-<li>You will receive an email confirmation when the agency identifier is approved.</li>
-</ol>
+    <h3>Request a DDI agency ID</h3>
+    <p>Follow these three quick steps to obtain a DDI agency identifier</p>
+    <ol>
+        <li>Create an account. <a asp-area="Identity" asp-page="/Account/Register">Register here.</a></li>
+        <li>Request an Agency ID under the <a href="/Manage">Your Agencies</a> tab.</li>
+        <li>You will receive an email confirmation when the agency identifier is approved.</li>
+    </ol>
 
-<p>See the Help page for @Html.ActionLink("detailed instructions", "Index", "Help").</p>
+    <p>See the Help page for @Html.ActionLink("detailed instructions", "Index", "Help").</p>
+</div>

@@ -2,146 +2,168 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Mvc;
 using Ddi.Registry.Data;
 using Ddi.Registry.Web.Models;
-using System.Web.Security;
 using System.Net.Mail;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity;
+using System.Text.Encodings.Web;
+using NISOCountries.Ripe;
+using NISOCountries.Core;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace Ddi.Registry.Web.Controllers
 {
     public class ManageController : Controller
     {
+        private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _email;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public ManageController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailSender email, IHostingEnvironment hostingEnvironment)
+        {
+            _context = context;
+            _email = email;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _hostingEnvironment = hostingEnvironment;
+        }
+
         #region Assignment
         [Authorize]
-        public ActionResult AddAssignment(Guid agencyId)
+        public async Task<IActionResult> AddAssignment(string agencyId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-
-            if (!provider.ManagesAgency(username, agencyId))
+            if (!await _context.ManagesAgency(userId, agencyId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Agency agency = provider.GetAgency(agencyId);
+            Agency agency = await _context.GetAgency(agencyId);
             AssignmentModel assignment = new AssignmentModel()
             {
                 AgencyId = agencyId,
-                AgencyName = agency.AgencyName,
-                Name = agency.AgencyName + "."
+                AssignmentId = agencyId + "."
             };
             return View(assignment);
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult AddAssignment(AssignmentModel model)
+        public async Task<IActionResult> AddAssignment(AssignmentModel model)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             if (ModelState.IsValid)
             {
-                if (!provider.ManagesAgency(username, model.AgencyId))
+                if (!await _context.ManagesAgency(userId, model.AgencyId))
                 {
-                    return RedirectToAction("NoAccess", "Error");
+                    return Forbid();
                 }
-                Agency agency = provider.GetAgency(model.AgencyId);
+                Agency agency = await _context.GetAgency(model.AgencyId);
 
-                string assignmentName = model.Name.ToLowerInvariant();
-                if (!assignmentName.StartsWith(agency.AgencyName, StringComparison.InvariantCultureIgnoreCase))
+                string assignmentName = model.AssignmentId.ToLowerInvariant();
+                if (!assignmentName.StartsWith(agency.AgencyId, StringComparison.InvariantCultureIgnoreCase))
                 {
                     ModelState.AddModelError("", "The agency must start with the agency id");
                     model.AgencyId = agency.AgencyId;
-                    model.AgencyName = agency.AgencyName;
-                    model.Name = agency.AgencyName + ".";
+                    model.AssignmentId = agency.AgencyId + ".";
                     return View(model);
                 }
                 
-                if (provider.GetAssignment(assignmentName) != null)
+                if (await _context.GetAssignment(assignmentName) != null)
                 {
                     ModelState.AddModelError("", "Sub agency already exists: " + assignmentName);
                     model.AgencyId = agency.AgencyId;
-                    model.AgencyName = agency.AgencyName;
-                    model.Name = agency.AgencyName + ".";                    
+                    model.AssignmentId = agency.AgencyId + ".";
                     return View(model);
                 }
 
                 Assignment assignment = new Assignment()
                 {
                     AgencyId = model.AgencyId,
-                    Name = assignmentName
+                    AssignmentId = assignmentName
                 };
+                await _context.Assignments.AddAsync(assignment);
+                int result = await _context.SaveChangesAsync();
 
-                provider.Add(assignment);
 
             }
             return RedirectToAction("ViewAgency", "Manage", new { agencyId = model.AgencyId });            
         }
 
         [Authorize]
-        public ActionResult EditAssignment(Guid assignmentId)
+        public async Task<IActionResult> EditAssignment(string assignmentId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            Assignment assignment = provider.GetAssignment(assignmentId);
-            if (assignment == null || !provider.ManagesAssignment(username, assignment.AssignmentId))
+            Assignment assignment = await _context.GetAssignment(assignmentId);
+            if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
 
-			Agency agency = provider.GetAgency(assignment.AgencyId);
+			Agency agency = await _context.GetAgency(assignment.AgencyId);
 			if (agency == null)
 			{
-				return RedirectToAction("NoAccess", "Error");
+				return Forbid();
 			}
 
             AssignmentModel model = new AssignmentModel()
             {
                 AgencyId = assignment.AgencyId,
-                AgencyName = agency.AgencyName,
-				Name = assignment.Name,
-                Delegated = assignment.IsDelegated,
                 AssignmentId = assignment.AssignmentId,
+                Delegated = assignment.IsDelegated,
 				IsDelegated = assignment.IsDelegated,
-				Services = provider.GetServicesForAssignment(assignment.AssignmentId),
-				Delegations = provider.GetDelegationsForAssignment(assignment.AssignmentId)
+				Services = await _context.GetServicesForAssignment(assignment.AssignmentId),
+				Delegations = await _context.GetDelegationsForAssignment(assignment.AssignmentId)
             };
             return View(model);
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult EditAssignment(AssignmentModel model)
+        public async Task<IActionResult> EditAssignment(AssignmentModel model)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             if (ModelState.IsValid)
             {
-                Assignment assignment = provider.GetAssignment(model.AssignmentId);
-                if (assignment == null || !provider.ManagesAssignment(username, assignment.AssignmentId))
+                Assignment assignment = await _context.Assignments.FindAsync(model.AssignmentId);
+                if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
                 {
-                    return RedirectToAction("NoAccess", "Error");
+                    return Forbid();
                 }
-                Agency agency = provider.GetAgency(assignment.AgencyId);
+                Agency agency = await _context.GetAgency(assignment.AgencyId);
 
-                string assignmentName = model.Name;
-                if (assignmentName.Equals(agency.AgencyName, StringComparison.InvariantCultureIgnoreCase))
+                string assignmentName = model.AssignmentId;
+                if (assignmentName.Equals(agency.AgencyId, StringComparison.InvariantCultureIgnoreCase))
                 {
                     //
                 }
-                else if (!assignmentName.StartsWith(agency.AgencyName + ".", StringComparison.InvariantCultureIgnoreCase))
+                else if (!assignmentName.StartsWith(agency.AgencyId + ".", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    assignmentName = agency.AgencyName + "." + assignmentName;
+                    assignmentName = agency.AgencyId + "." + assignmentName;
                 }
 
-                assignment.Name = assignmentName.ToLowerInvariant();
+                assignment.AssignmentId = assignmentName.ToLowerInvariant();
                 assignment.IsDelegated = model.Delegated;
                 assignment.LastModified = DateTime.UtcNow;
-                provider.Update(assignment);
+                var updated = await _context.SaveChangesAsync();
 
 				return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
             }
@@ -149,25 +171,22 @@ namespace Ddi.Registry.Web.Controllers
         }
 
 		[Authorize]
-		public ActionResult DeleteAssignment(Guid assignmentId)
+		public async Task<IActionResult> DeleteAssignment(string assignmentId)
 		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
 
-			Assignment assignment = provider.GetAssignment(assignmentId);
-			if (assignment == null || !provider.ManagesAssignment(username, assignment.AssignmentId))
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-			Agency agency = provider.GetAgency(assignment.AgencyId);
-			if (agency == null)
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
+            Assignment assignment = await _context.Assignments.FindAsync(assignmentId);
+            if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
+            Agency agency = await _context.GetAgency(assignment.AgencyId);
 
-			// Don't allow deleting the top level assignment.
-			if (assignment.Name == agency.AgencyName)
+            // Don't allow deleting the top level assignment.
+            if (assignment.AssignmentId == agency.AgencyId)
 			{
 				return RedirectToAction("ViewAgency", new { agencyId = agency.AgencyId });
 			}
@@ -177,37 +196,34 @@ namespace Ddi.Registry.Web.Controllers
 
 		[Authorize]
 		[HttpPost]
-		public ActionResult DeleteAssignment(Assignment assignment)
+		public async Task<IActionResult> DeleteAssignment(Assignment postAssignment)
 		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
+			//RegistryProvider provider = new RegistryProvider();
+			//string username = User.Identity.Name;
 
             if (ModelState.IsValid)
             {
-			    if (assignment == null || !provider.ManagesAssignment(username, assignment.AssignmentId))
-			    {
-				    return RedirectToAction("NoAccess", "Error");
-			    }
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-				Assignment populatedAssignment = provider.GetAssignment(assignment.AssignmentId);
+                Assignment assignment = await _context.Assignments.FindAsync(postAssignment.AssignmentId);
+                if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
+                {
+                    return Forbid();
+                }
+                Agency agency = await _context.GetAgency(assignment.AgencyId);
 
-				Agency agency = provider.GetAgency(populatedAssignment.AgencyId);
-			    if (agency == null)
-			    {
-				    return RedirectToAction("NoAccess", "Error");
-			    }
-
-			    // Don't allow deleting the top level assignment.
-			    if (populatedAssignment.Name == agency.AgencyName)
+                // Don't allow deleting the top level assignment.
+                if (assignment.AssignmentId == agency.AgencyId)
 			    {
 				    return RedirectToAction("ViewAgency", new { agencyId = agency.AgencyId });
 			    }
 
-			    provider.Remove(assignment);
+			    _context.Assignments.Remove(assignment);
+                await _context.SaveChangesAsync();
 
 			    return RedirectToAction("ViewAgency", new { agencyId = agency.AgencyId });
             }
-            return View(assignment);
+            return View(postAssignment);
 		}
 
 
@@ -215,15 +231,16 @@ namespace Ddi.Registry.Web.Controllers
 
         #region Service
         [Authorize]
-        public ActionResult AddService(Guid assignmentId)
+        public async Task<IActionResult> AddService(string assignmentId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            Assignment assignment = await _context.Assignments.FindAsync(assignmentId);
 
-
-            if (!provider.ManagesAssignment(username, assignmentId))
+            if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
             Service service = new Service()
             {
@@ -233,108 +250,141 @@ namespace Ddi.Registry.Web.Controllers
         }
 
         [Authorize]
-        public ActionResult DeleteService(Guid serviceId)
+        public async Task<IActionResult> DeleteService(string serviceId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
-
-
-            if (!provider.ManagesService(username, serviceId))
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            Service service = await _context.Services.FindAsync(serviceId);
+            if(service == null)
             {
-                return RedirectToAction("NoAccess", "Error");
+                return NotFound();
             }
-
-            Service service = provider.GetService(serviceId);
-            if (service == null) { return RedirectToAction("NotFound", "Error"); }
-            Assignment assignment = provider.GetAssignment(service.AssignmentId);
-            if (assignment == null) { return RedirectToAction("NotFound", "Error"); }
+            Assignment assignment = await _context.Assignments.FindAsync(service.AssignmentId);
+            if (assignment == null)
+            {
+                NotFound();
+            }
+            else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
 
 			return View(service);
         }
 
 		[Authorize]
 		[HttpPost]
-		public ActionResult DeleteService(Service service)
+		public async Task<IActionResult> DeleteService(Service postService)
 		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            Service service = await _context.Services.FindAsync(postService.ServiceId);
+            if (service == null)
+            {
+                return NotFound();
+            }
+            Assignment assignment = await _context.Assignments.FindAsync(service.AssignmentId);
+            if (assignment == null)
+            {
+                NotFound();
+            }
+            else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
 
-			if (service == null) { return RedirectToAction("NotFound", "Error"); }
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
 
-			if (!provider.ManagesService(username, service.ServiceId))
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
+            await _context.RecordUpdate();
 
-			Assignment assignment = provider.GetAssignment(service.AssignmentId);
-			if (assignment == null) { return RedirectToAction("NotFound", "Error"); }
-
-			provider.Remove(service);
-
-			return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
+            return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
 		}
 
 
         [HttpPost]
         [Authorize]
-        public ActionResult AddService(Service service)
+        public async Task<IActionResult> AddService(Service postService)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
-            
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
             if (ModelState.IsValid)
             {
-                if (!provider.ManagesAssignment(username, service.AssignmentId))
+                Assignment assignment = await _context.Assignments.FindAsync(postService.AssignmentId);
+                if (assignment == null)
                 {
-                    return RedirectToAction("NoAccess", "Error");
+                    NotFound();
                 }
-                Assignment assignment = provider.GetAssignment(service.AssignmentId);
+                else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+                {
+                    return Forbid();
+                }
 
-                service.ServiceId = Guid.NewGuid();
-                provider.Add(service);
+                Service service = new Service();
+                service.AssignmentId = postService.AssignmentId;
+                service.ServiceName = postService.ServiceName;
+                service.Hostname = postService.Hostname;
+                service.Port = postService.Port;
+                service.Protocol = postService.Protocol;
+                service.TimeToLive = postService.TimeToLive;
+                service.Priority = postService.Priority;
+                service.Weight = postService.Weight;
+
+
+                _context.Services.Add(service);
+                await _context.SaveChangesAsync();
+
+                await _context.RecordUpdate();
 
                 return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
             }
-            return View(service);
+            return View(postService);
         }
 
         [Authorize]
-        public ActionResult EditService(Guid serviceId)
+        public async Task<IActionResult> EditService(string serviceId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!provider.ManagesService(username, serviceId))
+            if (!await _context.ManagesService(userId, serviceId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Service service = provider.GetService(serviceId);
+            Service service = await _context.Services.FindAsync(serviceId);
             return View(service);
         }
 
         [HttpPost]
         [Authorize]
-        public ActionResult EditService(Service service)
+        public async Task<IActionResult> EditService(Service postService)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             if (ModelState.IsValid)
             {
-                if (!provider.ManagesService(username, service.ServiceId))
+                if (!await _context.ManagesService(userId, postService.ServiceId))
                 {
-                    return RedirectToAction("NoAccess", "Error");
+                    return Forbid();
                 }
-                if (!provider.ManagesAssignment(username, service.AssignmentId))
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-                provider.Update(service);
+                var service = await _context.Services.FindAsync(postService.ServiceId);
 
-                Assignment assignment = provider.GetAssignment(service.AssignmentId);
+                service.Hostname = postService.Hostname;
+                service.Port = postService.Port;
+                service.Priority = postService.Priority;
+                service.Protocol = postService.Protocol;
+                service.ServiceName = postService.ServiceName;
+                service.TimeToLive = postService.TimeToLive;
+                service.Weight = postService.Weight;
+
+                await _context.SaveChangesAsync();
+
+                await _context.RecordUpdate();
+
+                Assignment assignment = await _context.Assignments.FindAsync(service.AssignmentId);
                 return RedirectToAction("ViewAgency", "Manage", new { agencyId = assignment.AgencyId });
             }
-            return View(service);
+            return View(postService);
         }
 
 
@@ -343,15 +393,18 @@ namespace Ddi.Registry.Web.Controllers
 
         #region Delegation
         [Authorize]
-        public ActionResult AddDelegation(Guid assignmentId)
+        public async Task<IActionResult> AddDelegation(string assignmentId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-
-            if (!provider.ManagesAssignment(username, assignmentId))
+            var assignment = await _context.Assignments.FindAsync(assignmentId); 
+            if(assignment == null)
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
+            }
+            if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
             }
             Delegation delegation = new Delegation()
             {
@@ -362,82 +415,103 @@ namespace Ddi.Registry.Web.Controllers
 
         [HttpPost]
         [Authorize]
-        public ActionResult AddDelegation(Delegation delegation)
+        public async Task<IActionResult> AddDelegation(Delegation postDelegation)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
-
             if (ModelState.IsValid)
             {
-                if (!provider.ManagesAssignment(username, delegation.AssignmentId))
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-                Assignment assignment = provider.GetAssignment(delegation.AssignmentId);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-                delegation.DelegationId = Guid.NewGuid();
-                provider.Add(delegation);
+                var assignment = await _context.Assignments.FindAsync(postDelegation.AssignmentId);
+                if (assignment == null)
+                {
+                    return Forbid();
+                }
+                if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+                {
+                    return Forbid();
+                }
+
+                Delegation delegation = new Delegation()
+                {
+                    AssignmentId = postDelegation.AssignmentId,
+                    NameServer = postDelegation.NameServer
+                };
+                _context.Delegations.Add(delegation);
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
             }
-            return View(delegation);
+            return View(postDelegation);
         }
 
         [Authorize]
-        public ActionResult EditDelegation(Guid delegationId)
+        public async Task<IActionResult> EditDelegation(string delegationId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!provider.ManagesDelegation(username, delegationId))
+
+            Delegation delegation = await _context.Delegations.FindAsync(delegationId);
+            if(delegation == null) { return Forbid(); }
+
+            var assignment = await _context.Assignments.FindAsync(delegation.AssignmentId);
+            if (assignment == null)
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Delegation delegation = provider.GetDelegation(delegationId);
+            if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
+
             return View(delegation);
         }
 
         [HttpPost]
         [Authorize]
-        public ActionResult EditDelegation(Delegation delegation)
+        public async Task<IActionResult> EditDelegation(Delegation postDelegation)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             if (ModelState.IsValid)
             {
-                if (!provider.ManagesDelegation(username, delegation.DelegationId))
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-                if (!provider.ManagesAssignment(username, delegation.AssignmentId))
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-                provider.Update(delegation);
+                Delegation delegation = await _context.Delegations.FindAsync(postDelegation.DelegationId);
+                if (delegation == null) { return Forbid(); }
 
-                Assignment assignment = provider.GetAssignment(delegation.AssignmentId);
+                var assignment = await _context.Assignments.FindAsync(delegation.AssignmentId);
+                if (assignment == null)
+                {
+                    return Forbid();
+                }
+                if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+                {
+                    return Forbid();
+                }
+
+                delegation.NameServer = postDelegation.NameServer;
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
             }
-            return View(delegation);
+            return View(postDelegation);
         }
 
 		[Authorize]
-		public ActionResult DeleteDelegation(Guid delegationId)
+		public async Task<IActionResult> DeleteDelegation(string delegationId)
 		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-			if (!provider.ManagesDelegation(username, delegationId))
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
+            Delegation delegation = await _context.Delegations.FindAsync(delegationId);
+            if (delegation == null) { return Forbid(); }
 
-			Delegation delegation = provider.GetDelegation(delegationId);
-			if (delegation == null) { return RedirectToAction("NotFound", "Error"); }
-
-			Assignment assignment = provider.GetAssignment(delegation.AssignmentId);
-			if (assignment == null) { return RedirectToAction("NotFound", "Error"); }
+            var assignment = await _context.Assignments.FindAsync(delegation.AssignmentId);
+            if (assignment == null)
+            {
+                return Forbid();
+            }
+            if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
 
 			return View(delegation);
 		}
@@ -445,23 +519,25 @@ namespace Ddi.Registry.Web.Controllers
 
         [Authorize]
 		[HttpPost]
-        public ActionResult DeleteDelegation(Delegation delegation)
+        public async Task<IActionResult> DeleteDelegation(Delegation postDelegation)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-			if (delegation == null) { return RedirectToAction("NotFound", "Error"); }
-			
-			Guid delegationId = delegation.DelegationId;
-            if (!provider.ManagesDelegation(username, delegationId))
+            Delegation delegation = await _context.Delegations.FindAsync(postDelegation.DelegationId);
+            if (delegation == null) { return Forbid(); }
+
+            var assignment = await _context.Assignments.FindAsync(delegation.AssignmentId);
+            if (assignment == null)
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
+            }
+            if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
             }
 
-            Assignment assignment = provider.GetAssignment(delegation.AssignmentId);
-            if (assignment == null) { return RedirectToAction("NotFound", "Error"); }
-
-            provider.Remove(delegation);
+            _context.Delegations.Remove(delegation);
+            await _context.SaveChangesAsync();
 
 			return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
         }
@@ -470,80 +546,177 @@ namespace Ddi.Registry.Web.Controllers
 
         #region Agency
         [Authorize]
-        public ActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             OverviewModel model = new OverviewModel();
-            model.Agencies = provider.GetAgenciesForUser(username);
-            model.People = provider.GetPeopleForUser(username);
+            model.Agencies = await _context.GetAgenciesForUser(userId);
+            model.People = await _context.GetPeopleForUser(userId);
 
             return View(model);
         }
 
         [Authorize]
-        public ActionResult AddAgency()
+        public async Task<IActionResult> AddAgency()
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            ViewBag.People = provider.GetPeopleForUser(username);
-            return View();
+            ViewBag.People = await _context.GetPeopleForUser(userId);
+
+            AgencyModel agencyModel = new AgencyModel()
+            {
+                AdminContactId = userId,
+                TechnicalContactId = userId
+            };
+            return View(agencyModel);
         }
 
         [Authorize]
-        public ActionResult EditAgency(Guid agencyId)
+        public async Task<IActionResult> EditAgency(string agencyId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!provider.ManagesAgency(username, agencyId))
+            if (!await _context.ManagesAgency(userId, agencyId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Agency agency = provider.GetAgency(agencyId);
+            Agency agency = await _context.GetAgency(agencyId);
             AgencyModel model = new AgencyModel()
             {
-                AdminContact = agency.AdminContactId,
-                TechnicalContact = agency.TechnicalContactId,
+                AdminContactId = agency.AdminContactId,
+                TechnicalContactId = agency.TechnicalContactId,
+                CreatorId = agency.CreatorId,
                 AgencyId = agency.AgencyId,
-                AgencyName = agency.AgencyName
+                Label = agency.Label
             };
-            ViewBag.People = provider.GetPeopleForUser(username);
+            ViewBag.People = await _context.GetPeopleForUser(userId);
             return View(model);
         }
 
         [HttpPost]
         [Authorize]
-        public ActionResult EditAgency(AgencyModel model)
+        public async Task<IActionResult> EditAgency(AgencyModel model)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!provider.ManagesAgency(username, model.AgencyId))
+            Agency agency = await _context.GetAgency(model.AgencyId);
+            if(agency == null)
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Agency agency = provider.GetAgency(model.AgencyId);
+            if (!await _context.ManagesAgency(userId, agency.AgencyId))
+            {
+                return Forbid();
+            }
 
-            if (model.AdminContact != default(Guid)) { agency.AdminContactId = model.AdminContact; }
-            if (model.TechnicalContact != default(Guid)) { agency.TechnicalContactId = model.TechnicalContact; }
+            agency.Label = model.Label;
+
+            agency.AdminContactId = await SelectOrInviteUser(model.AdminContactId, model.AdminContactEmail, model.AgencyId);
+            agency.TechnicalContactId = await SelectOrInviteUser(model.TechnicalContactId, model.TechnicalContactEmail, model.AgencyId);
+                     
             agency.LastModified = DateTime.UtcNow;
-            provider.Update(agency);
+
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Manage");
         }
 
+        private async Task<string> SelectOrInviteUser(string userId, string email, string agencyId)
+        {
+            ApplicationUser user;
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                user = await _context.Users.FindAsync(userId);
+                if(user != null)
+                {
+                    return userId;
+                }
+                return null;
+            }
+
+            if(string.IsNullOrWhiteSpace(email)) 
+            {
+                return null;
+            }
+
+            user = await _context.Users.Where(x => x.NormalizedEmail == email.ToUpperInvariant()).FirstOrDefaultAsync();
+            if(user == null)
+            { 
+                var inviterId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                ApplicationUser inviter = await _context.Users.FindAsync(inviterId);
+
+
+                user = new ApplicationUser()
+                {
+                    UserName = email,
+                    Email = email
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = user.Id, code = code },
+                        protocol: Request.Scheme);
+
+                    await _email.SendEmailAsync(email, "You have been invited to the DDI Registry - Confirm your email",
+                        $"{inviter.Name} ({inviter.Email}) Has invited you to manage the DDI Agency Id {agencyId}. Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    return user.Id;
+                }
+            }
+            else
+            {
+                return user.Id;
+            }
+            return null;
+        }
+
+
         [Authorize]
         [HttpPost]
-        public ActionResult AddAgency(AgencyModel addAgencyModel)
+        public async Task<IActionResult> AddAgency(AgencyModel addAgencyModel)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // allow two digit codes, int, and uk
+            if (addAgencyModel != null && addAgencyModel.AgencyId != null)
+            {
+
+                int index = addAgencyModel.AgencyId.IndexOf(".");
+                if (index != 2 && index != 3)
+                {
+                    ModelState.AddModelError("", "The agency id must start with a 2 character ISO 3166 country code or int, For example: us.agencyname");
+                }
+                else
+                {
+                    string code = addAgencyModel.AgencyId.Substring(0, index);
+                    if (index == 2 && string.Compare(code.ToLowerInvariant(), "uk") != 0)
+                    {
+                        string projectRootPath = _hostingEnvironment.ContentRootPath;
+                        var ripeFile = Path.Combine(projectRootPath, "iso3166-countrycodes.txt");
+                        var isoCountries = new RipeISOCountryReader().Parse(ripeFile);
+                        var isoLookup = new ISOCountryLookup<RipeCountry>(isoCountries);
+
+                        var isIsoCode = isoLookup.TryGetByAlpha2(code, out RipeCountry country);
+                        if (!isIsoCode)
+                        {
+                            ModelState.AddModelError("", $"{code} is not a valid country code. The agency id must start with a 2 character ISO 3166 country code or int, For example: us.agencyname");
+                        }
+                    }
+                    else if (index == 3 && string.Compare(code.ToLowerInvariant(),"int") != 0)
+                    {
+                        ModelState.AddModelError("", "The agency id must start with a 2 character ISO 3166 country code or int, For example: us.agencyname");
+                    }
+                }
+            }
 
             if (ModelState.IsValid)
             {
-                Agency agency = provider.GetAgency(addAgencyModel.AgencyName);
+                Agency agency = await _context.GetAgency(addAgencyModel.AgencyId);
                 if (agency != null)
                 {
                     ModelState.AddModelError("", "The agency id already exists, please try again");
@@ -552,66 +725,95 @@ namespace Ddi.Registry.Web.Controllers
                 {
                     agency = new Agency() 
                     { 
-                        AgencyName = addAgencyModel.AgencyName,
+                        AgencyId = addAgencyModel.AgencyId,
                         ApprovalState = ApprovalState.Requested,
-                        Username = username
+                        Label = addAgencyModel.Label,
+                        CreatorId = userId,
+                        AdminContactId = userId,
+                        TechnicalContactId = userId
                     };
-                    if (addAgencyModel.AdminContact != default(Guid)) { agency.AdminContactId = addAgencyModel.AdminContact; }
-                    if (addAgencyModel.TechnicalContact != default(Guid)) { agency.TechnicalContactId = addAgencyModel.TechnicalContact; }
-                    provider.Add(agency);
+                    agency.AdminContactId = await SelectOrInviteUser(addAgencyModel.AdminContactId, addAgencyModel.AdminContactEmail, addAgencyModel.AgencyId);
+                    agency.TechnicalContactId = await SelectOrInviteUser(addAgencyModel.TechnicalContactId, addAgencyModel.TechnicalContactEmail, addAgencyModel.AgencyId);
 
-					// Send email.
-					MembershipUser user = Membership.GetUser(this.User.Identity.Name);
-					SendConfirmationEmail(user, addAgencyModel.AgencyName);
+                    _context.Agencies.Add(agency);
+                    await _context.SaveChangesAsync();
+
+
+                    // Send email.
+                    var user = await _context.Users.FindAsync(userId);
+                    if(user != null)
+                    {
+                        await SendConfirmationEmail(user, addAgencyModel.AgencyId);
+                    }
+
+                    var approvers = await _userManager.GetUsersInRoleAsync("admin");
+                    foreach(var approver in approvers)
+                    {
+                        await SendApproverEmail(approver, user, addAgencyModel.AgencyId);
+                    }
 
                     return RedirectToAction("Index", "Manage");
                 }
             }
 
-            ViewBag.People = provider.GetPeopleForUser(username);
+            ViewBag.People = await _context.GetPeopleForUser(userId);
             return View();
         }
 
-		private void SendConfirmationEmail(MembershipUser user, string agencyName)
-		{
-			string messageText = string.Format(
-				"You submitted the following request for a new agency identifier:\n\n  {0}\n\nYou will receive a separate confirmation when your request has been processed.\n\nThank you,\n\nThe DDI Alliance",
-				agencyName);
+        private async Task SendApproverEmail(ApplicationUser approver, ApplicationUser user, string agencyName)
+        {
+            var bodyHtml = $@"<p>{user.Name} {user.Email} has submitted the following request for a new agency identifier:</<p>
+<p>{agencyName}</p>
+<p>Please review the agency at <a href=""https://registry.ddialliance.org/Admin"">https://registry.ddialliance.org/Admin</a>.</p>
+<p>Thank you,<br/>
+The DDI Alliance</p>";
+            var subject = $"DDI Registry - Agency Approval Request: {agencyName}";
 
-			var message = new MailMessage("ddiregistry@ddialliance.org", user.Email)
-			{
-				Subject = "DDI Registry - Agency Request: " + agencyName,
-				Body = messageText
-			};
-			message.ReplyToList.Add("ddiregistry@ddialliance.org");
-			message.From = new MailAddress("ddiregistry@ddialliance.org", "DDI Registry");
-			var client = new SmtpClient();
-			client.Send(message);
+            await _email.SendEmailAsync(approver.Email, subject, bodyHtml);
+        }
+
+        private async Task SendConfirmationEmail(ApplicationUser user, string agencyName)
+		{
+            var bodyHtml = $@"<p>You submitted the following request for a new agency identifier:</<p>
+<p>{agencyName}</p>
+<p>You will receive a separate confirmation when your request has been processed.</p>
+<p>Thank you,<br/>
+The DDI Alliance</p>";
+            var subject = $"DDI Registry - Agency Request: {agencyName}";
+
+            await _email.SendEmailAsync(user.Email, subject, bodyHtml);
 		}
 
         [Authorize]
-        public ActionResult ViewAgency(Guid agencyId)
+        public async Task<IActionResult> ViewAgency(string agencyId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;            
 
-           
-            if (!provider.ManagesAgency(username, agencyId))
+            if (!await _context.ManagesAgency(userId, agencyId))
             {
-                return RedirectToAction("NoAccess", "Error");
+                return Forbid();
             }
-            Agency agency = provider.GetAgency(agencyId);
 
+            var agency = await _context.Agencies
+                .Include(i => i.AdminContact)
+                .Include(i => i.TechnicalContact)
+                .Include(i => i.Creator)
+                .Include(i => i.Assignments)
+                    .ThenInclude(i => i.Services)
+                .Include(i => i.Assignments)
+                    .ThenInclude(i => i.Delegations)
+                .FirstOrDefaultAsync(x => x.AgencyId == agencyId);
+            
             AgencyOverviewModel model = new AgencyOverviewModel();
-            model.Agency = provider.GetAgency(agencyId);
-            model.AdminContact = provider.GetPerson(agency.AdminContactId);
-            model.TechnicalContact = provider.GetPerson(agency.TechnicalContactId);
-            model.Assignments = provider.GetAssignmentsForAgency(agencyId);
+            model.Agency = agency;
+            model.AdminContact = agency.AdminContact;
+            model.TechnicalContact = agency.TechnicalContact;
+            model.Assignments = agency.Assignments;
 
             foreach (Assignment a in model.Assignments)
             {
-                model.Services[a.AssignmentId] = provider.GetServicesForAssignment(a.AssignmentId);
-                model.Delegations[a.AssignmentId] = provider.GetDelegationsForAssignment(a.AssignmentId);
+                model.Services[a.AssignmentId] = a.Services;
+                model.Delegations[a.AssignmentId] = a.Delegations;
             }
 
             return View(model);
@@ -619,140 +821,17 @@ namespace Ddi.Registry.Web.Controllers
         #endregion
 
         #region Person
+
         [Authorize]
-        public ActionResult AddPerson()
+        public async Task<IActionResult> ViewPerson(string personId)
         {
-			Person person = new Person();
+            ApplicationUser person = await _context.Users.FindAsync(personId);
+            if (person == null)
+            {
+                return NotFound();
+            }
             return View(person);
         }
-
-        [Authorize]
-        public ActionResult ViewPerson(Guid personId)
-        {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;            
-
-            if (provider.ManagesPerson(username, personId))
-            {
-                Person person = provider.GetPerson(personId);
-                if (person == null)
-                {
-                    return RedirectToAction("NotFound", "Error");
-                }
-                return View(person);
-            }
-            else
-            {
-                return RedirectToAction("NoAccess", "Error");
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public ActionResult AddPerson(Person person)
-        {
-            if (ModelState.IsValid)
-            {
-                RegistryProvider provider = new RegistryProvider();
-                string username = User.Identity.Name;
-                person.PersonId = Guid.NewGuid();
-                person.Username = username;
-                provider.Add(person);
-                return RedirectToAction("Index", "Manage");
-            }
-            return View();
-        }
-
-        [Authorize]
-        public ActionResult EditPerson(Guid personId)
-        {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
-
-            
-            if (provider.ManagesPerson(username,personId))
-            {
-                Person person = provider.GetPerson(personId);
-                if (person != null)
-                {
-                    return View(person);
-                }
-                else
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-            }
-            else
-            {
-                return RedirectToAction("NoAccess", "Error");
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public ActionResult EditPerson(Person person)
-        {
-            if (ModelState.IsValid)
-            {
-                RegistryProvider provider = new RegistryProvider();
-                string username = User.Identity.Name;
-
-                if (provider.ManagesPerson(username, person.PersonId))
-                {
-                    person.Username = username;
-                    provider.Update(person);
-                    return RedirectToAction("Index", "Manage");
-                }
-                else
-                {
-                    return RedirectToAction("NoAccess", "Error");
-                }
-            }
-            return View();
-        }
-
-		[Authorize]
-		public ActionResult DeletePerson(Guid personId)
-		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
-
-			if (provider.ManagesPerson(username, personId))
-			{
-				Person person = provider.GetPerson(personId);
-
-				if (person != null)
-				{
-					return View(person);
-				}
-				else
-				{
-					return RedirectToAction("NoAccess", "Error");
-				}
-			}
-			else
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
-		}
-
-		[Authorize]
-		[HttpPost]
-		public ActionResult DeletePerson(Person person)
-		{
-			RegistryProvider provider = new RegistryProvider();
-			string username = User.Identity.Name;
-
-			if (provider.ManagesPerson(username, person.PersonId))
-			{
-				provider.Remove(person);
-				return RedirectToAction("Index");
-			}
-			else
-			{
-				return RedirectToAction("NoAccess", "Error");
-			}
-		}
 
         #endregion
 

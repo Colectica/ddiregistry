@@ -1,50 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
 using Ddi.Registry.Data;
 using Ddi.Registry.Web.Models;
-using System.Web.Security;
 using System.Globalization;
 using System.Net.Mail;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Ddi.Registry.Web.Controllers
 {
     public class AdminController : Controller
 	{
-		#region Approval
+        private readonly ApplicationDbContext _context;
 
-		[Authorize(Roles="admin")]
-        public ActionResult Index()
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailSender _email;
+
+        public AdminController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager,
+            IEmailSender email)
         {
-            RegistryProvider provider = new RegistryProvider();
-            string username = User.Identity.Name;
+            _context = context;
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _email = email;
+        }
+
+        #region Approval
+
+        [Authorize(Roles= "admin,SuperAdmin")]
+        public async Task<IActionResult> Index()
+        {
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
 
             ApproveModel model = new ApproveModel();
-            model.Agencies = provider.GetAgenciesByApprovalState(ApprovalState.Requested);
+            model.Agencies = await _context.Agencies.Where(x => x.ApprovalState == ApprovalState.Requested)
+                .Include(i => i.Creator)
+                .Include(i => i.AdminContact)
+                .Include(i => i.TechnicalContact)
+                .ToListAsync();
 
-            Dictionary<Guid, Person> people = new Dictionary<Guid, Person>();
+            Dictionary<string, ApplicationUser> people = new Dictionary<string, ApplicationUser>();
             foreach (Agency agency in model.Agencies)
             {
-                if (agency.AdminContactId != default(Guid) &&
+                if (!string.IsNullOrWhiteSpace(agency.AdminContactId) &&
                     !people.ContainsKey(agency.AdminContactId))
                 {
-                    Person p = provider.GetPerson(agency.AdminContactId);
-                    if (p != null)
-                    {
-                        people[agency.AdminContactId] = p;
-                    }
+                    people[agency.AdminContactId] = agency.AdminContact;
                 }
 
-                if (agency.TechnicalContactId != default(Guid) &&
-                        !people.ContainsKey(agency.TechnicalContactId))
+                if (!string.IsNullOrWhiteSpace(agency.TechnicalContactId) &&
+                    !people.ContainsKey(agency.TechnicalContactId))
                 {
-                    Person p = provider.GetPerson(agency.TechnicalContactId);
-                    if (p != null)
-                    {
-                        people[agency.TechnicalContactId] = p;
-                    }
+                    people[agency.TechnicalContactId] = agency.TechnicalContact;
+                }
+
+                if (!string.IsNullOrWhiteSpace(agency.CreatorId) &&
+                    !people.ContainsKey(agency.CreatorId))
+                {
+                    people[agency.CreatorId] = agency.Creator;
                 }
             }
             model.People = people;
@@ -52,94 +77,94 @@ namespace Ddi.Registry.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = "admin")]
-        public ActionResult Approve(Guid agencyId)
+        [Authorize(Roles = "admin,SuperAdmin")]
+        public async Task<IActionResult> Approve(string agencyId)
         {
-            RegistryProvider provider = new RegistryProvider();
-            Agency agency = provider.GetAgency(agencyId);
+            
+            Agency agency = await _context.GetAgency(agencyId);
             if (agency != null)
             {
                 agency.ApprovalState = ApprovalState.Approved;
                 agency.DateApproved = DateTime.UtcNow;
                 agency.LastModified = DateTime.UtcNow;
-                provider.Update(agency);
+
+                _context.Add(agency);
+
 
                 Assignment assignment = new Assignment()
                 {
-                    Name = agency.AgencyName,
+                    Agency = agency,
                     AgencyId = agency.AgencyId,
                     IsDelegated = false
                 };
-                provider.Add(assignment);
 
-                MembershipUser user = Membership.GetUser(agency.Username);
-                SendApprovedEmail(user, agency.AgencyName);
+                _context.Add(assignment);
+
+                await _context.SaveChangesAsync();
+
+                var creator = await _context.Users.FindAsync(agency.CreatorId);
+                if(creator != null)
+                {
+                    await SendApprovedEmail(creator, agencyId);
+                }                
 
                 return RedirectToAction("Index", "Admin");
             }
-            return RedirectToAction("NoAccess", "Error");
+            return Forbid();
         }
 
-        public void SendApprovedEmail(MembershipUser user, string agencyName)
+        public async Task SendApprovedEmail(ApplicationUser user, string agencyName)
         {
-			var message = new MailMessage("ddiregistry@ddialliance.org", user.Email)
-            {
-                Subject = "DDI Registry - Agency Approved: " + agencyName,
-                Body = string.Format("The following agency identifier has been approved:\n\n  {0}\n\nThank you,\n\nThe DDI Alliance", agencyName)
-            };
-			message.ReplyToList.Add("ddiregistry@ddialliance.org");
-			message.From = new MailAddress("ddiregistry@ddialliance.org", "DDI Registry");
-            var client = new SmtpClient();
-            client.Send(message);
+            var bodyHtml = $"<p>The following agency identifier has been approved:</<p><p>{agencyName}</p><p>Thank you,<br/>The DDI Alliance</p>";
+            var subject = $"DDI Registry - Agency Approved: {agencyName}";
+
+            await _email.SendEmailAsync(user.Email, subject, bodyHtml);
         }
-        public void SendDeniedEmail(MembershipUser user, string agencyName, string reason)
+        public async Task SendDeniedEmail(ApplicationUser user, string agencyName, string reason)
         {
-			string text = string.Format("The following request for an agency identifier has been denied:\n\n  {0}\n\nThe reason given was:\n\n  {1}\n\nThank you,\n\nThe DDI Alliance", agencyName, reason);
-			var message = new MailMessage("ddiregistry@ddialliance.org", user.Email)
-            {
-                Subject = "DDI Registry - Agency Denied: " + agencyName,
-                Body = text
-            };
-			message.ReplyToList.Add("ddiregistry@ddialliance.org");
-			message.From = new MailAddress("ddiregistry@ddialliance.org", "DDI Registry");
-            var client = new SmtpClient();
-            client.Send(message);
+			string bodyHtml = $"<p>The following request for an agency identifier has been denied:</p><p>{agencyName}</p><p>The reason given was:</p><p>{reason}</p><p>Thank you,<br/>The DDI Alliance</p>";
+            var subject = $"DDI Registry - Agency Denied: {agencyName}";
+
+            await _email.SendEmailAsync(user.Email, subject, bodyHtml);
         }
 
-        [Authorize(Roles = "admin")]
-        public ActionResult Delete(Guid agencyId)
-        {
-            RegistryProvider provider = new RegistryProvider();
-            Agency agency = provider.GetAgency(agencyId);
+        [Authorize(Roles = "admin,SuperAdmin")]
+        public async Task<IActionResult> Delete(string agencyId)
+        {            
+            Agency agency = await _context.GetAgency(agencyId);
             if (agency != null)
             {
 				DeleteAgencyRequestModel model = new DeleteAgencyRequestModel(agency);
 				return View(model);
             }
-            return RedirectToAction("NoAccess", "Error");
+            return Forbid();
         }
 
-		[Authorize(Roles = "admin")]
+		[Authorize(Roles = "admin,SuperAdmin")]
 		[HttpPost]
-		public ActionResult Delete(DeleteAgencyRequestModel model)
+		public async Task<IActionResult> Delete(DeleteAgencyRequestModel model)
 		{
-			RegistryProvider provider = new RegistryProvider();
+			
             if (ModelState.IsValid &&
 				model != null &&
 				model.Agency != null)
             {
-				Agency agency = model.Agency;
-                agency = provider.GetAgency(agency.AgencyId);
+				Agency agency = await _context.GetAgency(model.Agency.AgencyId);
                 if (agency != null)
                 {                    
-                    provider.Remove(agency);
+                    _context.Remove(agency);
+                    await _context.SaveChangesAsync();
+
+                    var creator = await _context.Users.FindAsync(agency.CreatorId);
+                    if (creator != null)
+                    {
+                        await SendDeniedEmail(creator, agency.AgencyId, model.Reason);
+                    }
                     
-                    MembershipUser user = Membership.GetUser(agency.Username);
-                    SendDeniedEmail(user, agency.AgencyName, model.Reason);
                     return RedirectToAction("Index", "Admin");
                 }
             }
-			return RedirectToAction("NoAccess", "Error");
+			return Forbid();
 		}
 
 		#endregion
@@ -147,24 +172,42 @@ namespace Ddi.Registry.Web.Controllers
 		#region Membership
 
 		[Authorize(Roles="SuperAdmin")]
-		public ActionResult ShowMembers()
+		public async Task<IActionResult> ShowMembers()
 		{
-			int records = 0;
-
-			MembershipUserCollection members = Membership.GetAllUsers(0, Int32.MaxValue, out records);
+            List<ApplicationUser> members = await _context.Users.OrderBy(x => x.Name).ThenBy(x => x.Organization).ThenBy(x => x.NormalizedUserName).ToListAsync();
 
 			return View(members);
-		}
+		}        
 
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<IActionResult> ImpersonateUser(string id)
+        {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var impersonatedUser = await _userManager.FindByIdAsync(id);
+
+            var userPrincipal = await _signInManager.CreateUserPrincipalAsync(impersonatedUser);
+
+            userPrincipal.Identities.First().AddClaim(new Claim("OriginalUserId", currentUserId));
+            userPrincipal.Identities.First().AddClaim(new Claim("IsImpersonating", "true"));
+
+            // sign out the current user
+            await _signInManager.SignOutAsync();
+
+            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, userPrincipal); 
+
+            return RedirectToAction("Index", "Home");
+        }
+        /*
 		[Authorize(Roles = "SuperAdmin")]
-		public ActionResult CreateMember()
+		public async Task<IActionResult> CreateMember()
 		{
 			return View();
 		}
 
 		[Authorize(Roles = "SuperAdmin")]
-		[AcceptVerbs(HttpVerbs.Post)]
-		public ActionResult CreateMember(string userName, string email, string password, string confirmPassword)
+        [HttpPost]
+        public async Task<IActionResult> CreateMember(string userName, string email, string password, string confirmPassword)
 		{
 			try
 			{
@@ -193,17 +236,18 @@ namespace Ddi.Registry.Web.Controllers
 			// If we got this far, something failed, redisplay form
 			return View();
 		}
+        
 
 		[Authorize(Roles = "SuperAdmin")]
-		public ActionResult EditMember(Guid id)
+		public async Task<IActionResult> EditMember(string id)
 		{
-			MembershipUser user = Membership.GetUser(id, false);
+            var user = await _context.Users.FindAsync(id);
 			return View(user);
 		}
 
 		[Authorize(Roles = "SuperAdmin")]
-		[AcceptVerbs(HttpVerbs.Post)]
-		public ActionResult EditMember(Guid id, FormCollection collection)
+        [HttpPost]
+        public async Task<IActionResult> EditMember(string id, FormCollection collection)
 		{
 			try
 			{
@@ -235,7 +279,7 @@ namespace Ddi.Registry.Web.Controllers
 		}
 
 		[Authorize(Roles = "SuperAdmin")]
-		public ActionResult DeleteMember(Guid id)
+		public async Task<IActionResult> DeleteMember(Guid id)
 		{
 			MembershipUser user = Membership.GetUser(id, false);
 			return View(user);
@@ -243,7 +287,7 @@ namespace Ddi.Registry.Web.Controllers
 
 		[Authorize(Roles = "SuperAdmin")]
 		[AcceptVerbs(HttpVerbs.Post)]
-		public ActionResult DeleteMember(Guid id, FormCollection collection)
+		public async Task<IActionResult> DeleteMember(Guid id, FormCollection collection)
 		{
 			try
 			{
@@ -283,12 +327,12 @@ namespace Ddi.Registry.Web.Controllers
 			}
 			return ModelState.IsValid;
 		}
+        */
+        #endregion
 
-		#endregion
+    }
 
-	}
-
-	public class RoleItem
+    public class RoleItem
 	{
 		public String Role { get; set; }
 

@@ -1,8 +1,8 @@
-﻿@model Ddi.Registry.Data.Person
+﻿@model Ddi.Registry.Data.ApplicationUser
 
 @{
-	ViewBag.Title = Model.Name;
-}
+    ViewBag.Title = Model.Name;
 
-<h2>@Model.Name</h2>
-@Html.Partial("PersonControl",Model)
+    var cardViewData = new ViewDataDictionary(ViewData) { { "CardTitle", "Contact" } };
+}
+<partial name="PersonControl" model="Model" view-data="cardViewData" />

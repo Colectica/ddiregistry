@@ -1,19 +1,22 @@
 ﻿@model IEnumerable<Ddi.Registry.Data.Delegation>
 
-<table>
-    <tr>
-        <th>
-            Name Server
-        </th>
-    </tr>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                Name Server
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
 
-@foreach (var item in Model) {
-    <tr>
-
-        <td>
-            @Html.DisplayFor(modelItem => item.NameServer)
-        </td>
-    </tr>
-}
-
+                <td>
+                    @Html.DisplayFor(modelItem => item.NameServer)
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>

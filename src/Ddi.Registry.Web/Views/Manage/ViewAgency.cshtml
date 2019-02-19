@@ -1,12 +1,12 @@
 ﻿@model Ddi.Registry.Web.Models.AgencyOverviewModel
 
 @{
-    ViewBag.Title = Model.Agency.AgencyName;
+    ViewBag.Title = Model.Agency.AgencyId;
 }
 
-<h2>@Model.Agency.AgencyName</h2>
+<h2>@Model.Agency.AgencyId</h2>
 
-@Html.Partial("AgencyControl",Model.Agency)
+<partial name="AgencyControl" for="Agency" />
 
 <h2>Sub Agency Assignments</h2>
 
@@ -14,50 +14,51 @@
 
 @if (Model.Assignments.Count() == 0)
 {
-	<p>No Sub Agencies have been assigned.</p>
+    <p>No Sub Agencies have been assigned.</p>
 }
 else
 {
-<table>
-	<tr>
-		<th>Name</th>
-		<th>Services</th>
-		<th>Is Delegated</th>
-		<th></th>
-	</tr>
-@foreach (Ddi.Registry.Data.Assignment a in Model.Assignments)
-{	
-	<text>
-	<tr>
-		<td>@a.Name</td>
-		<td>@Model.Services[a.AssignmentId].Count()</td>
-		<td>@a.IsDelegated</td>
-		<td>
-			@Html.ActionLink("Edit", "EditAssignment", new { assignmentId = a.AssignmentId })
-			@if (a.Name != Model.Agency.AgencyName)
-   {
-			<text>| @Html.ActionLink("Delete", "DeleteAssignment", new { assignmentId = a.AssignmentId })</text>
-   }
-		</td>
-  </tr>
-  </text>
-}
-</table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Services</th>
+                <th>Is Delegated</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Ddi.Registry.Data.Assignment a in Model.Assignments)
+            {
+                <text>
+                    <tr>
+                        <td>@a.AssignmentId</td>
+                        <td>@Model.Services[a.AssignmentId].Count()</td>
+                        <td>@a.IsDelegated</td>
+                        <td>
+                            @Html.ActionLink("Edit", "EditAssignment", new { assignmentId = a.AssignmentId })
+                            @if (a.AssignmentId != Model.Agency.AgencyId)
+                            {
+                                <text>| @Html.ActionLink("Delete", "DeleteAssignment", new { assignmentId = a.AssignmentId })</text>
+            }
+                        </td>
+                    </tr>
+                    </text>
+                }
+        </tbody>
+    </table>
 }
 
 <h2>Contact Information</h2>
+
 @if (Model.AdminContact != null)
 {
-    <fieldset>
-    <legend>Admin Contact</legend>
-    @Html.Partial("PersonControl", Model.AdminContact)
-    </fieldset>
+    var adminViewData = new ViewDataDictionary(ViewData) { { "CardTitle", "Administrative Contact" } };
+    <partial name="PersonControl" model="Model.AdminContact" view-data="adminViewData" />
 }
 
 @if (Model.TechnicalContact != null)
 {
-    <fieldset>
-    <legend>Technical Contact</legend>
-    @Html.Partial("PersonControl", Model.TechnicalContact)
-    </fieldset>
+    var techViewData = new ViewDataDictionary(ViewData) { { "CardTitle", "Technical Contact" } };
+    <partial name="PersonControl" model="Model.TechnicalContact" view-data="techViewData" />
 }

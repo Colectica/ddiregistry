@@ -1,0 +1,25 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=ddi_registry;Username=postgres;Password=yourpassword;",
+    "ProviderName": "Npgsql"
+  },
+  "EmailConfiguration": {
+    "Host": "localhost",
+    "Port": 587,
+    "EnableSSL": false,
+    "UserName": "user",
+    "Password": "password",
+    "FromName": "DDI Agency Registry",
+    "FromAddress": "ddiregistry@ddialliance.org"
+  },
+  "Recaptcha": {
+    "ReCaptchaPublicKey": "xxx",
+    "ReCaptchaPrivateKey": "xxx"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}

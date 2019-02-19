@@ -1,38 +1,44 @@
 ﻿@{
-    ViewBag.Title = "Tools";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Tools";
 }
 
 <h2>Tools</h2>
 
 <p>The following development tools work with the DDI Registry.</p>
 
-<table>
-	<tr>
-		<th>Tool</th>
-		<th>License</th>
-		<th width="60%">Description</th>
-	</tr>
-
-	<tr>
-		<td><a href="http://resolver.colectica.com/Home/Develop">Colectica DDI Resolver Library for .NET</a></td>
-		<td>LGPL</td>
-		<td>The Colectica DDI Resolver Library for .NET can be used by .NET software developers to use the global 
-		Domain Name System (DNS) to query for information about DDI agencies.</td>
-	</tr>
-	<tr>
-		<td><a href="http://resolver.colectica.com/Home/Develop">Colectica DDI Resolver Library for Java</a></td>
-		<td>LGPL</td>
-		<td>The Colectica DDI Resolver Library for Java can be used by Java software developers to use the global 
-		Domain Name System (DNS) to query for information about DDI agencies.</td>
-	</tr>
-	<tr>
-		<td><a href="/Home/RegistrySource">DDI Registry Source Code</a></td>
-		<td>LGPL</td>
-		<td>
-		You can deploy the DDI Registry software on your own infrastructure to run your own registry service. 
-		You might want to do this if you would like to provide your own delegation and resolution services, 
-		instead of relying on the DDI Alliance's registry service.
-		</td>
-	</tr>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tool</th>
+            <th>License</th>
+            <th width="60%">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a href="http://resolver.colectica.com/Home/Develop">Colectica DDI Resolver Library for .NET</a></td>
+            <td>LGPL</td>
+            <td>
+                The Colectica DDI Resolver Library for .NET can be used by .NET software developers to use the global
+                Domain Name System (DNS) to query for information about DDI agencies.
+            </td>
+        </tr>
+        <tr>
+            <td><a href="http://resolver.colectica.com/Home/Develop">Colectica DDI Resolver Library for Java</a></td>
+            <td>LGPL</td>
+            <td>
+                The Colectica DDI Resolver Library for Java can be used by Java software developers to use the global
+                Domain Name System (DNS) to query for information about DDI agencies.
+            </td>
+        </tr>
+        <tr>
+            <td><a href="/Home/RegistrySource">DDI Registry Source Code</a></td>
+            <td>LGPL</td>
+            <td>
+                You can deploy the DDI Registry software on your own infrastructure to run your own registry service.
+                You might want to do this if you would like to provide your own delegation and resolution services,
+                instead of relying on the DDI Alliance's registry service.
+            </td>
+        </tr>
+    </tbody>
 </table>

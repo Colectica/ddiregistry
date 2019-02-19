@@ -1,24 +1,27 @@
 ﻿@model IEnumerable<Ddi.Registry.Data.Delegation>
 
-<table>
-    <tr>
-        <th>
-            Name Server
-        </th>
-        <th></th>
-    </tr>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                Name Server
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
 
-@foreach (var item in Model) {
-    <tr>
-
-        <td>
-            @Html.DisplayFor(modelItem => item.NameServer)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "EditDelegation", new { delegationId = item.DelegationId }) |
-            @Html.ActionLink("Delete", "DeleteDelegation", new { delegationId = item.DelegationId })
-        </td>
-    </tr>
-}
-
+                <td>
+                    @Html.DisplayFor(modelItem => item.NameServer)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "EditDelegation", new { delegationId = item.DelegationId }) |
+                    @Html.ActionLink("Delete", "DeleteDelegation", new { delegationId = item.DelegationId })
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>

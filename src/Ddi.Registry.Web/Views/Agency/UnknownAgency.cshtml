@@ -7,5 +7,4 @@
 <h2>Unknown Agency</h2>
 
 <p>An agency named <strong>@Model.AgencyName</strong> does not exist.</p>
-
-@Html.Partial("SearchControl", new Ddi.Registry.Web.Models.SearchModel())
+<partial name="SearchControl" model="new Ddi.Registry.Web.Models.SearchModel()" />

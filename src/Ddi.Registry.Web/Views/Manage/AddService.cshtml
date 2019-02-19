@@ -1,5 +1,4 @@
 ﻿@model Ddi.Registry.Data.Service
-@using Ddi.Registry.Web.Extensions
 
 @{
     ViewBag.Title = "Add a Service";
@@ -7,17 +6,18 @@
 
 <h2>Add Service</h2>
 
-<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
-<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
 
-@using (Html.BeginForm()) {
+
+
+@using (Html.BeginForm())
+{
     @Html.ValidationSummary(true)
     <fieldset>
         @Html.HiddenFor(model => model.AssignmentId)
         @Html.HiddenFor(model => model.ServiceId)
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.ServiceName)
+            @Html.LabelFor(model => model.ServiceName)
         </div>
         <div class="editor-field">
             @Html.TextBoxFor(model => model.ServiceName, new { autofocus = "true" })
@@ -25,7 +25,7 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.Hostname)
+            @Html.LabelFor(model => model.Hostname)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.Hostname)
@@ -33,7 +33,7 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.Port)
+            @Html.LabelFor(model => model.Port)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.Port)
@@ -41,7 +41,7 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.Protocol)
+            @Html.LabelFor(model => model.Protocol)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.Protocol)
@@ -49,7 +49,7 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.TimeToLive)
+            @Html.LabelFor(model => model.TimeToLive)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.TimeToLive)
@@ -57,7 +57,7 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.Priority)
+            @Html.LabelFor(model => model.Priority)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.Priority)
@@ -65,21 +65,25 @@
         </div>
 
         <div class="editor-label">
-            @Html.LabelWithTooltip(model => model.Weight)
+            @Html.LabelFor(model => model.Weight)
         </div>
         <div class="editor-field">
             @Html.EditorFor(model => model.Weight)
             @Html.ValidationMessageFor(model => model.Weight)
         </div>
 
-		<div class="editor-submit">
-        <p>
-            <input type="submit" value="Create" />
-        </p>
-		</div>
+        <div class="editor-submit">
+            <p>
+                <input type="submit" value="Create" />
+            </p>
+        </div>
     </fieldset>
 }
 
 <div>
     @Html.ActionLink("Back to Assignment Page", "EditAssignment", new { assignmentId = Model.AssignmentId })
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,31 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+using System.Threading.Tasks;
 using Ddi.Registry.Data;
 using Ddi.Registry.Web.Models;
-using System.Collections.ObjectModel;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ddi.Registry.Web.Controllers
 {
     public class AgencyController : Controller
     {
-        public ActionResult Index(string agencyName)
+        private readonly ApplicationDbContext _context;
+
+        public AgencyController(ApplicationDbContext context)
         {
-            RegistryProvider provider = new RegistryProvider();
+            _context = context;
+        }
+
+
+        public async Task<IActionResult> Index(string agencyName)
+        {
+            //RegistryProvider provider = new RegistryProvider();
 
             if (string.IsNullOrEmpty(agencyName)) 
             {
-                Collection<Agency> agencies = provider.GetAgencies(state: ApprovalState.Approved);
+                //Collection<Agency> agencies = provider.GetAgencies(state: ApprovalState.Approved);
+                List<Agency> agencies = await _context.Agencies.Where(x => x.ApprovalState == ApprovalState.Approved).ToListAsync();
                 return View("AgencyList", agencies);            
             }
 
             AgencyOverviewModel model = new AgencyOverviewModel();
 
-			
 
-            Agency agency = provider.GetAgency(agencyName);
+
+            //Agency agency = provider.GetAgency(agencyName);
+            var agency = await _context.Agencies.SingleOrDefaultAsync(x => 
+                    string.Compare(x.AgencyId, agencyName, true) == 0 
+                    && x.ApprovalState == ApprovalState.Approved);
+
             if (agency == null || agency.ApprovalState != ApprovalState.Approved)
             {
 				UnknownAgencyModel unknownModel = new UnknownAgencyModel()
@@ -35,45 +48,68 @@ namespace Ddi.Registry.Web.Controllers
                 return View("UnknownAgency", unknownModel);
             }
 
+
+
+            await _context.Entry(agency)
+                .Reference(x => x.AdminContact)
+                .LoadAsync();
+            await _context.Entry(agency)
+                .Reference(x => x.TechnicalContact)
+                .LoadAsync();
+            await _context.Entry(agency)
+                .Reference(x => x.Creator)
+                .LoadAsync();
+
+            await _context.Entry(agency)
+                .Collection(x => x.Assignments)
+                .LoadAsync();
+
             model.Agency = agency;
-            model.AdminContact = provider.GetPerson(agency.AdminContactId);
-            model.TechnicalContact = provider.GetPerson(agency.TechnicalContactId);
-            model.Assignments = provider.GetAssignmentsForAgency(agency.AgencyId);
+            model.AdminContact = agency.AdminContact;
+            model.TechnicalContact = agency.TechnicalContact;
+            model.Assignments = agency.Assignments;
 
             foreach (Assignment a in model.Assignments)
             {
-                model.Services[a.AssignmentId] = provider.GetServicesForAssignment(a.AssignmentId);
-                model.Delegations[a.AssignmentId] = provider.GetDelegationsForAssignment(a.AssignmentId);
+                await _context.Entry(a)
+                    .Collection(x => x.Services)
+                    .LoadAsync();
+                await _context.Entry(a)
+                    .Collection(x => x.Delegations)
+                    .LoadAsync();
+
+                model.Services[a.AssignmentId] = a.Services;
+                model.Delegations[a.AssignmentId] = a.Delegations;
             }
 
             return View(model);
         }
 
         [HttpPost]
-        public ActionResult Index(SearchModel model)
+        public async Task<IActionResult> Index(SearchModel model)
         {
             if (model != null)
             {
-                return Search(model.Term);
+                return await Search(model.Term);
             }
             else
             {
-                RegistryProvider provider = new RegistryProvider();
-                Collection<Agency> agencies = provider.GetAgencies(state: ApprovalState.Approved);
+                //RegistryProvider provider = new RegistryProvider();
+                List<Agency> agencies = await _context.Agencies.Where(x => x.ApprovalState == ApprovalState.Approved).ToListAsync();
                 return View("AgencyList", agencies);
             }
         }
 
 
-        public ActionResult Search(string term)
+        public async Task<IActionResult> Search(string term)
         {
-            RegistryProvider provider = new RegistryProvider();
+            //RegistryProvider provider = new RegistryProvider();
 
             if (ModelState.IsValid)
             {
                 if (term == null)
                 {
-                    Collection<Agency> agencies = provider.GetAgencies(state: ApprovalState.Approved);
+                    List<Agency> agencies = await _context.Agencies.Where(x => x.ApprovalState == ApprovalState.Approved).OrderBy(x=>x.AgencyId).ToListAsync();
                     return View("AgencyList", agencies);
                 }
 
@@ -88,10 +124,11 @@ namespace Ddi.Registry.Web.Controllers
                     }
                 }
 
-                Agency agency = provider.GetAgency(search);
+                var agency = await _context.Agencies.SingleOrDefaultAsync(x => x.AgencyId == search);
                 if (agency == null)
                 {
-                    Collection<Agency> agencies = provider.GetAgencies(state: ApprovalState.Approved, partialName: search);
+                    List<Agency> agencies = await _context.Agencies.Where(x => x.ApprovalState == ApprovalState.Approved 
+                        && (x.AgencyId.Contains(term) || x.Label.Contains(term))).ToListAsync();
                     return View("AgencyList", agencies);
                 }
 

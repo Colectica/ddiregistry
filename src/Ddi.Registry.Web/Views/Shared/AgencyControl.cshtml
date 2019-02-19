@@ -1,15 +1,20 @@
 ﻿@model Ddi.Registry.Data.Agency
 
-<fieldset>    
-    <div class="display-label">Agency Name:</div>
-    <div class="display-field">@Html.DisplayFor(model => model.AgencyName)</div>
+<dl class="row">
+   
+    <dt class="col-sm-3">Agency Name:</dt>
+    <dd class="col-sm-9">@Html.DisplayFor(model => model.AgencyId)</dd>
 
-    <div class="display-label">Date Created:</div>
-    <div class="display-field">@Html.DisplayFor(model => model.DateCreated)</div>
+    <dt class="col-sm-3">Agency Label:</dt>
+    <dd class="col-sm-9">@Html.DisplayFor(model => model.Label)</dd>
 
-    <div class="display-label">Last Modified:</div>
-    <div class="display-field">@Html.DisplayFor(model => model.LastModified)</div>
+    <dt class="col-sm-3">Date Created:</dt>
+    <dd class="col-sm-9">@Html.DisplayFor(model => model.DateCreated)</dd>
 
-    <div class="display-label">Date Approved:</div>
-    <div class="display-field">@Html.DisplayFor(model => model.DateApproved)</div>
-</fieldset>
+    <dt class="col-sm-3">Last Modified:</dt>
+    <dd class="col-sm-9">@Html.DisplayFor(model => model.LastModified)</dd>
+
+    <dt class="col-sm-3">Date Approved:</dt>
+    <dd class="col-sm-9">@Html.DisplayFor(model => model.DateApproved)</dd>
+  
+</dl>

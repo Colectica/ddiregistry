@@ -1,16 +1,18 @@
 ﻿@model Ddi.Registry.Web.Models.SearchModel
-           
-<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
-<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
 
-@using (Html.BeginForm()) {
+<h3>Search the Registry</h3>
+<form asp-controller="Agency" asp-action="Index" method="post">
     
-	<h3>Search the Registry</h3>
-	@Html.ValidationSummary(true)
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="input-group mb-3">
+        <input asp-for="Term" class="form-control" placeholder="Enter an agency identifier" aria-label="Enter an agency identifier" aria-describedby="button-search" />
+        <span asp-validation-for="Term" class="text-danger"></span>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit" id="button-search">Search</button>
+        </div>
+    </div>
+</form>
 
-    @Html.TextBoxFor(model => model.Term, new { Class="searchBox", autofocus = "true", placeholder = "Enter an agency identifier" } )
-    @Html.ValidationMessageFor(model => model.Term)
 
-    <input type="submit" value="Search" />
-}
+
 
