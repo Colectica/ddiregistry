@@ -1,0 +1,41 @@
+﻿@model Ddi.Registry.Data.Service
+
+@{
+    ViewBag.Title = "Delete " + Model.ServiceName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete Service</h2>
+
+<h3>Are you sure you want to delete this service?</h3>
+<fieldset>
+	<div class="display-label">Service Name</div>
+    <div class="display-field">@Model.ServiceName</div>
+
+    <div class="display-label">Protocol</div>
+    <div class="display-field">@Model.Protocol</div>
+
+    <div class="display-label">Hostname</div>
+    <div class="display-field">@Model.Hostname</div>
+
+    <div class="display-label">Port</div>
+    <div class="display-field">@Model.Port</div>
+
+    <div class="display-label">Time to Live</div>
+    <div class="display-field">@Model.TimeToLive</div>
+
+    <div class="display-label">Priority</div>
+    <div class="display-field">@Model.Priority</div>
+
+    <div class="display-label">Weight</div>
+    <div class="display-field">@Model.Weight</div>
+</fieldset>
+@using (Html.BeginForm()) {
+    <p>
+		@Html.HiddenFor(s => s.ServiceId)
+        <input type="submit" value="Delete" /> |
+        @Html.ActionLink("Back to Assignment Page", "EditAssignment", new { assignmentId = Model.AssignmentId })
+    </p>
+}
+
+

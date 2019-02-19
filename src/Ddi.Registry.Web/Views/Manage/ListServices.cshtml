@@ -1,0 +1,59 @@
+﻿@model IEnumerable<Ddi.Registry.Data.Service>
+
+<table>
+    <tr>
+        <th>
+          Service Name
+        </th>
+        <th>
+            Hostname
+        </th>
+        <th>
+            Port
+        </th>
+        <th>
+            Protocol
+        </th>
+        <th>
+            Time to Live
+        </th>
+        <th>
+            Priority
+        </th>
+        <th>
+            Weight
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ServiceName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Hostname)
+        </td>        
+        <td>
+            @Html.DisplayFor(modelItem => item.Port)
+        </td>        
+        <td>
+            @Html.DisplayFor(modelItem => item.Protocol)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TimeToLive)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Priority)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Weight)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "EditService", new { serviceId=item.ServiceId }) |
+            @Html.ActionLink("Delete", "DeleteService", new { serviceId = item.ServiceId })
+        </td>
+    </tr>
+}
+
+</table>

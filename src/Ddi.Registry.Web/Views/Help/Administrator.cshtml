@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Administrator Documentation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Administrator Documentation</h2>
+
+<h3>Process Agency Requests</h3>
+<p>
+To process agency identifier requests, navigate to the Approve Agencies page by clicking
+the Agency Admin link on the top navigation bar. Note that you will need to be @Html.ActionLink("logged in", "LogIn", "Account") 
+before this link will appear.
+</p>
+
+<p>
+The Approve Agencies page lists all pending agency identifier requests. You may take the following actions for each request.
+</p>
+
+<dl>
+<dt>Approve</dt>
+<dd>Approve the agency</dd>
+
+<dt>Delete</dt>
+<dd>Do not approve the agency</dd>
+</dl>
+
+<h3>Create Administrative Users</h3>
+<p>
+To manage administrative users, navigate to the User administration page by clicking the User Admin link 
+on the top navigation bar. Note that you will need to be @Html.ActionLink("logged in", "LogIn", "Account") 
+before this link will appear.
+</p>
+
+<p>
+From the User Admin page, you can create new users, edit users, or delete users.
+</p>
+

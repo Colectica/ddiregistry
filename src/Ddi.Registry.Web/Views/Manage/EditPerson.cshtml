@@ -1,0 +1,14 @@
+﻿@model Ddi.Registry.Data.Person
+
+@{
+    ViewBag.Title = "Edit " + Model.Name;
+}
+
+<h2>Edit @Model.Name</h2>
+@Gravatar.GetHtml(Model.Email, defaultImage: "mm")
+
+@Html.Partial("EditPersonControl", Model)
+
+<div>
+    @Html.ActionLink("Back to Management Page", "Index")
+</div>

@@ -1,0 +1,8 @@
+﻿@model Ddi.Registry.Data.Person
+
+@{
+	ViewBag.Title = Model.Name;
+}
+
+<h2>@Model.Name</h2>
+@Html.Partial("PersonControl",Model)

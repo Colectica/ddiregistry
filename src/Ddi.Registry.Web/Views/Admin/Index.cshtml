@@ -1,0 +1,89 @@
+﻿@model Ddi.Registry.Web.Models.ApproveModel
+
+@{
+    ViewBag.Title = "Approve Agencies";
+}
+
+@functions { 
+
+    public string GetName(Guid personId) 
+    {
+        if(Model.People.ContainsKey(personId)) 
+        {
+            Ddi.Registry.Data.Person p = Model.People[personId];
+            if(p != null) 
+            {
+                string result = p.Name;
+                if(p.Organization != null) {
+                    result += "(" + p.Organization + ")";   
+                }
+                return result;
+            
+            }
+        }
+        return "none";
+    }
+}
+
+<h2>Approve Agencies</h2>
+
+@if (Model.Agencies.Count() == 0)
+{
+	<p>No agencies need to be approved.</p>
+}
+else
+{
+<table>
+    <tr>
+        <th>
+            Username
+        </th>
+        <th>
+            Agency Name
+        </th>
+        <th>
+            Created
+        </th>
+        <th>
+            Last Modified
+        </th>
+        <th>
+            Technical Contact
+        </th>
+        <th>
+            Administrative Contact
+        </th>
+        <th>
+        </th>
+    </tr>
+
+@foreach (var item in Model.Agencies)
+{
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Username)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AgencyName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DateCreated)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.LastModified)
+        </td>
+        <td>
+            @GetName(item.TechnicalContactId)
+        </td>
+        <td>
+            @GetName(item.AdminContactId)
+        </td>
+        <td>
+            @Html.ActionLink("Approve", "Approve", new { agencyId = item.AgencyId }) |
+            @Html.ActionLink("Delete", "Delete", new { agencyId = item.AgencyId })
+        </td>
+    </tr>
+}
+
+</table>
+}

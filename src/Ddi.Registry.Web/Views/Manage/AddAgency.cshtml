@@ -1,0 +1,55 @@
+﻿@model Ddi.Registry.Web.Models.AgencyModel
+@using Ddi.Registry.Web.Extensions
+
+@{
+    ViewBag.Title = "Add an Agency";
+}
+
+<h2>Add Agency</h2>
+
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+<p>
+Use this form to request an agency identifier. The agency name should be in the form [country code] dot [name].
+For example: <strong>us.agencyname</strong>
+</p>
+
+@using (Html.BeginForm()) {
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <div class="editor-label">
+            @Html.LabelWithTooltip(model => model.AgencyName)
+        </div>
+        <div class="editor-field">
+            @Html.TextBoxFor(model => model.AgencyName, new { autofocus="true" })
+            @Html.ValidationMessageFor(model => model.AgencyName)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelWithTooltip(model => model.AdminContact)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(m => m.AdminContact, new SelectList(ViewBag.People, "PersonId", "Name"))            
+            @Html.ValidationMessageFor(model => model.AdminContact)
+        </div>
+        
+        <div class="editor-label">
+            @Html.LabelWithTooltip(model => model.TechnicalContact)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(m => m.TechnicalContact, new SelectList(ViewBag.People, "PersonId", "Name"))            
+            @Html.ValidationMessageFor(model => model.TechnicalContact)
+        </div>
+
+		<div class="editor-submit">
+        <p>
+            <input type="submit" value="Create" />
+        </p>
+		</div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to Management Page", "Index")
+</div>

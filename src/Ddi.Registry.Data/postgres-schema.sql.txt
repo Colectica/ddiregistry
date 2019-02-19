@@ -1,0 +1,140 @@
+﻿-- Database: ddi_registry
+
+-- DROP DATABASE ddi_registry;
+
+CREATE DATABASE ddi_registry
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'English_United States.1252'
+       LC_CTYPE = 'English_United States.1252'
+       CONNECTION LIMIT = -1;
+
+
+-- Table: export_action
+-- DROP TABLE export_action;
+
+CREATE TABLE export_action
+(
+  action_name character varying NOT NULL,
+  last_modified timestamp with time zone NOT NULL,
+  CONSTRAINT export_action_pkey PRIMARY KEY (action_name)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE export_action OWNER TO postgres;
+INSERT INTO export_action(
+            action_name, last_modified)
+    VALUES ('export', now() at time zone 'UTC');
+INSERT INTO export_action(
+            action_name, last_modified)
+    VALUES ('update', now() at time zone 'UTC');
+
+
+-- Sequence: soa_sequence
+-- DROP SEQUENCE soa_sequence;
+CREATE SEQUENCE soa_sequence
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE soa_sequence OWNER TO postgres;
+
+-- Table: person
+-- DROP TABLE person;
+CREATE TABLE person
+(
+  person_id uuid NOT NULL,
+  username character varying,
+  person_name character varying,
+  email character varying,
+  organization character varying,
+  job_title character varying,
+  street_address character varying,
+  city character varying,
+  state character varying,
+  zip character varying,
+  country character varying,
+  phone character varying,
+  homepage character varying,
+  CONSTRAINT person_pkey PRIMARY KEY (person_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE person OWNER TO postgres;
+
+-- Table: delegation
+-- DROP TABLE delegation;
+CREATE TABLE delegation
+(
+  delegation_id uuid NOT NULL,
+  assignment_id uuid NOT NULL,
+  nameserver character varying NOT NULL,
+  CONSTRAINT delegation_pkey PRIMARY KEY (delegation_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE delegation OWNER TO postgres;
+
+-- Table: service
+-- DROP TABLE service;
+CREATE TABLE service
+(
+  service_id uuid NOT NULL,
+  assignment_id uuid NOT NULL,
+  service_name character varying NOT NULL,
+  protocol character varying NOT NULL,
+  ttl integer NOT NULL,
+  priority integer NOT NULL,
+  weight integer NOT NULL,
+  port integer NOT NULL,
+  hostname character varying NOT NULL,
+  CONSTRAINT service_pkey PRIMARY KEY (service_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE service OWNER TO postgres;
+
+-- Table: "assignment"
+-- DROP TABLE "assignment";
+CREATE TABLE "assignment"
+(
+  assignment_id uuid NOT NULL,
+  agency_id uuid NOT NULL,
+  date_created timestamp with time zone NOT NULL,
+  last_modified timestamp with time zone NOT NULL,
+  assignment_name character varying NOT NULL,
+  delegated boolean NOT NULL,
+  CONSTRAINT assignment_pkey PRIMARY KEY (assignment_id),
+  CONSTRAINT assignment_assignment_name_key UNIQUE (assignment_name)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "assignment" OWNER TO postgres;
+
+-- Table: agency
+-- DROP TABLE agency;
+CREATE TABLE agency
+(
+  agency_id uuid NOT NULL,
+  username character varying,
+  date_created timestamp with time zone NOT NULL,
+  date_approved timestamp with time zone,
+  last_modified timestamp with time zone NOT NULL,
+  approval_state integer NOT NULL,
+  agency_name character varying NOT NULL,
+  technical_id uuid,
+  admin_id uuid,
+  CONSTRAINT agency_pkey PRIMARY KEY (agency_id),
+  CONSTRAINT agency_agency_name_key UNIQUE (agency_name)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE agency OWNER TO postgres;

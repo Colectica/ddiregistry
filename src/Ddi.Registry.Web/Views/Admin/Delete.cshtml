@@ -1,0 +1,49 @@
+﻿@model Ddi.Registry.Web.Models.DeleteAgencyRequestModel
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete @Model.Agency.AgencyName</h2>
+
+<h3>Are you sure you want to delete this agency?</h3>
+<fieldset>
+    <div class="display-label">Agency Name</div>
+    <div class="display-field">@Model.Agency.AgencyName</div>
+
+    <div class="display-label">Username</div>
+    <div class="display-field">@Model.Agency.Username</div>
+
+    <div class="display-label">DateCreated</div>
+    <div class="display-field">@String.Format("{0:g}", Model.Agency.DateCreated)</div>
+
+    <div class="display-label">LastModified</div>
+    <div class="display-field">@String.Format("{0:g}", Model.Agency.LastModified)</div>
+
+    <div class="display-label">DateApproved</div>
+    <div class="display-field">@String.Format("{0:g}", Model.Agency.DateApproved)</div>
+
+    <div class="display-label">TechnicalContactId</div>
+    <div class="display-field">@Model.Agency.TechnicalContactId</div>
+
+    <div class="display-label">AdminContactId</div>
+    <div class="display-field">@Model.Agency.AdminContactId</div>
+</fieldset>
+
+@using (Html.BeginForm()) {
+
+	<fieldset>
+		<legend>Please enter a reason</legend>
+		@Html.TextAreaFor(model => model.Reason)
+	</fieldset>
+	
+    <p>
+        @Html.HiddenFor(model => model.Agency.AgencyId)
+        @Html.HiddenFor(model => model.Agency.AgencyName)
+        <input type="submit" value="Delete" /> |
+        @Html.ActionLink("Back to Agency List", "Index")
+    </p>
+}
+
+

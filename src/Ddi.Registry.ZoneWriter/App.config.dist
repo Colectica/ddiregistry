@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <configSections>
+    <sectionGroup name="applicationSettings" type="System.Configuration.ApplicationSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="Ddi.Registry.ZoneWriter.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+  <connectionStrings>
+    <clear/>
+    <add name="DdiRegistry"
+         connectionString="Server=localhost;Port=5432;Database=ddi_registry;User Id=postgres;Password=yourpassword;Encoding=UNICODE;Sslmode=Prefer;Pooling=true;"
+         providerName="Npgsql"/>
+  </connectionStrings>
+
+  <system.data>
+    <DbProviderFactories>
+      <remove invariant="Npgsql"/>
+      <add name="Npgsql Data Provider" invariant="Npgsql" support="FF"
+           description=".Net Framework Data Provider for Postgresql Server"
+           type="Npgsql.NpgsqlFactory, Npgsql, Version=2.0.11.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
+      </add>
+    </DbProviderFactories>
+  </system.data>
+
+  <applicationSettings>
+    <Ddi.Registry.ZoneWriter.Settings>
+      <setting name="BaseZone" serializeAs="String">
+        <value>registry.ddialliance.org</value>
+      </setting>
+      <setting name="MasterNameserver" serializeAs="String">
+        <value>ns001.dnsmax.com</value>
+      </setting>
+      <setting name="Nameserver" serializeAs="Xml">
+        <value>
+          <ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <string>ns000.dnsmax.com</string>
+            <string>ns101.dnsmax.com</string>
+            <string>ns120.dnsmax.com</string>
+            <string>ns001.dnsmax.com</string>
+          </ArrayOfString>
+        </value>
+      </setting>
+      <setting name="DefaultARecord" serializeAs="String">
+        <value>69.54.36.97</value>
+      </setting>
+      <setting name="ZoneFileLocation" serializeAs="String">
+        <value>H:\temp\</value>
+      </setting>
+    </Ddi.Registry.ZoneWriter.Settings>
+  </applicationSettings>
+</configuration>

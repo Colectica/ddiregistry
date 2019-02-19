@@ -1,0 +1,132 @@
+﻿@model Ddi.Registry.Web.Models.OverviewModel
+
+@{
+    ViewBag.Title = "Manage";
+	
+	var approvedAgencies = Model.Agencies.Where(m => m.ApprovalState == Ddi.Registry.Data.ApprovalState.Approved).ToList();
+	var requestedAgencies = Model.Agencies.Where(m => m.ApprovalState == Ddi.Registry.Data.ApprovalState.Requested).ToList();
+}
+
+<h2>Agencies</h2>
+@if (approvedAgencies.Count == 0)
+{
+	<p>This account has no approved agencies.</p>
+}
+else
+{
+<table>
+    <tr>
+        <th>Agency Name</th>
+        <th>Created</th>
+        <th>Modified</th>
+        <th>Administrative Contact</th>
+        <th>Technical Contact</th>
+        <th>Status</th>
+        <th></th>
+    </tr>
+
+@functions { 
+
+    public string GetName(Guid personId) 
+    {
+        foreach(Ddi.Registry.Data.Person p in Model.People) 
+        {
+            if(p.PersonId == personId) {return p.Name;}
+        }
+        return "none";
+    }
+}
+
+@foreach (var item in approvedAgencies) {
+    <tr>
+        <td>@item.AgencyName</td>
+        <td>@item.DateCreated</td>
+        <td>@item.LastModified</td>
+        <td>@GetName(item.AdminContactId)</td>
+        <td>@GetName(item.TechnicalContactId)</td>
+        <td>@item.ApprovalState.ToString()</td>
+        <td>
+			@Html.ActionLink("Manage", "ViewAgency", new { agencyId = item.AgencyId }) |
+            @Html.ActionLink("Select Contacts", "EditAgency", new { agencyId = item.AgencyId })
+            
+        </td>
+    </tr>
+}
+</table>
+}
+
+<h2>Pending Requests</h2>
+
+@if (requestedAgencies.Count == 0)
+{
+	<p>This account has no pending agency requests.</p>
+}
+
+@if (Model.People.ToArray().Length == 0)
+{
+<text><p>To request an agency identifier, first @Html.ActionLink("add a contact person", "AddPerson").</p></text>
+}
+else
+{
+    <p>@Html.ActionLink("Request New Agency", "AddAgency")</p>
+}
+
+@if (requestedAgencies.Count > 0)
+{
+<table>
+    <tr>
+        <th>Agency Name</th>
+        <th>Requested On</th>
+        <th>Status</th>
+        <th></th>
+    </tr>
+
+@foreach (var item in requestedAgencies)
+{
+    <tr>
+        <td>@item.AgencyName</td>
+        <td>@item.DateCreated</td>
+        <td>@item.ApprovalState.ToString()</td>
+        <td>
+            @Html.ActionLink("Edit Contacts", "EditAgency", new { agencyId = item.AgencyId })
+        </td>
+    </tr>
+}
+</table>
+}
+
+
+<h2>Contact People</h2>
+<p>
+    @Html.ActionLink("Add Person", "AddPerson")
+</p>
+
+@if (Model.People.Count() == 0)
+{
+
+}
+else
+{
+<table>
+    <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Email</th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model.People)
+{
+    <tr>
+        <td>@Gravatar.GetHtml(item.Email, defaultImage: "mm")</td>
+        <td>@item.Name</td>
+        <td>@item.Email</td>
+        <td>
+			@Html.ActionLink("Details", "ViewPerson", new { personId = item.PersonId }) |
+            @Html.ActionLink("Edit", "EditPerson", new { personId = item.PersonId }) |
+			@Html.ActionLink("Delete", "DeletePerson", new { personId = item.PersonId })
+        </td>
+    </tr>
+}
+</table>
+}

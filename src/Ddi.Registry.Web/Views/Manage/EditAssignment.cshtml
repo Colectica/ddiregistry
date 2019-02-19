@@ -1,0 +1,74 @@
+﻿@model Ddi.Registry.Web.Models.AssignmentModel
+
+@{
+    ViewBag.Title = "Edit " + Model.Name;
+}
+
+<h2>Edit @Model.Name</h2>
+
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+@using (Html.BeginForm()) {
+    @Html.ValidationSummary(true)
+    <fieldset>
+        @Html.HiddenFor(model => model.AssignmentId)
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.Name)
+        </div>
+        <div class="editor-field">
+            @Html.TextBoxFor(model => model.Name)
+            @Html.ValidationMessageFor(model => model.Name)
+        </div>
+
+    </fieldset>
+	
+	<fieldset>
+		<legend>Services</legend>
+
+		@if (Model.IsDelegated)
+  {
+	<p><strong>These services are not active because resolution for @Model.Name is delegated to other name servers.</strong></p>
+  }
+
+		<div style="margin-top: 12px;">
+		<p>@Html.ActionLink("Add a service", "AddService", new { assignmentId = Model.AssignmentId })</p>
+		</div>
+
+		@if (Model.Services.Count() > 0)
+  {
+		@Html.Partial("ListServices", Model.Services)
+  }
+	</fieldset>
+	
+	<fieldset>
+		<legend>Delegations @if (!Model.IsDelegated) {<text>(Disabled)</text>}</legend>
+
+		<div class="editor-field">
+            @Html.EditorFor(model => model.Delegated)
+			@Html.LabelFor(model => model.Delegated, "Use my own name servers for resolution.")
+			@Html.ValidationMessageFor(model => model.Delegated)
+        </div>
+
+		<div style="padding-top: 12px; clear: both;">
+		<p>@Html.ActionLink("Add a Nameserver", "AddDelegation", new { assignmentId = Model.AssignmentId })</p>
+		</div>
+
+		@if (Model.Delegations.Count() > 0)
+  {
+		@Html.Partial("ListDelegations", Model.Delegations)
+  }
+
+	</fieldset>
+	
+	<div class="editor-submit">
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+	</div>
+}
+
+<div>
+    @Html.ActionLink("Back to Agency Page", "ViewAgency", new { agencyId = Model.AgencyId })
+</div>

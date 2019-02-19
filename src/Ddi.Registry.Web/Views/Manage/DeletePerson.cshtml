@@ -1,0 +1,20 @@
+﻿@model Ddi.Registry.Data.Person
+
+@{
+    ViewBag.Title = "Delete " + Model.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Remove Person</h2>
+
+<h3>Are you sure you want to delete @Model.Name?</h3>
+
+@using (Html.BeginForm()) {
+    <p>
+		@Html.HiddenFor(p => p.PersonId)
+        <input type="submit" value="Delete" /> |
+        @Html.ActionLink("Back to Management Page", "Index")
+    </p>
+}
+
+

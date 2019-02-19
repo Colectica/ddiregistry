@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Help";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>DDI Registry Help</h2>
+
+<h3>Request a DDI Agency Identifier</h3>
+
+<p>Follow these steps to obtain a DDI agency identifier.</p>
+<ol>
+	<li>Create an account for your organization. @Html.ActionLink("Register here", "Register", "Account").</li>
+	<li>Navigate to the @Html.ActionLink("Manage", "Index", "Manage") section of the web site.</li>
+	<li>Use the "Add Person" link to describe the contact persons for your organization.</li>
+	<li>Click the "Request New Agency" link to request your agency. See below for details on each field.</li>
+	<li>You will receive an email confirmation when the agency identifier is approved.</li>
+</ol>
+
+<h4>Agency Name</h4>
+<p>The agency name should be in the form [country code] dot [name]. For example: us.agencyname</p>
+
+<h4>Types of Contact Persons</h4>
+<dl>
+	<dt>Administrative Contact</dt>
+	<dd>An administrative contact is the individual authorized to interact with the DDI Registry
+	on behalf of the registrant specified in the WHOIS record.
+	The administrative contact for your domain has the authorization to accept notices and make requests to 
+	the DDI Registry regarding the management of your agency identifier and, along with the technical contact for your 
+	agency identifier, will receive all renewal and other administrative notices associated with the agency identifier.
+	</dd>
+	<dt>Technical Contact</dt>
+	<dd>The technical contact for your agency identifier is the individual or organization authorized to manage any 
+	technical issues related to your agency identifier.</dd>
+</dl>
+
+<h3>Configure a Sub Agency</h3>
+<p>Once your agency is approved, you can manage sub agencies. Sub agency identifiers
+are just like agency identifiers, but you can create them without waiting for approval.
+</p>
+
+<ol>
+	<li>Navigate to the @Html.ActionLink("Manage", "Index", "Manage") section of the web site.</li>
+	<li>Click the Manage link next to your approved agency identifier.</li>
+	<li>Click the "Add sub agency assignment" link.</li>
+	<li>Enter an identifier for your sub agency.</li>
+</ol>
+
+<h3>Configure Resolution Services</h3>
+<p>The DDI Registry integrates with the <a target="_blank" href="http://en.wikipedia.org/wiki/Domain_Name_System">Domain Name System</a> 
+to provide global resolution for DDI-related services you may run. For example, you may allow people to query for the 
+URL of a Web Service-based repository that holds your agency's metadata.
+</p>
+
+<ol>
+	<li>Navigate to the @Html.ActionLink("Manage", "Index", "Manage") section of the web site.</li>
+	<li>Click the Manage link next to your approved agency identifier.</li>
+	<li>Click the Edit link next to one of your sub agency identifiers.</li>
+	<li>Click the "Add a service" link to describe the service for which you would like to enable resolution.
+		If you would like to user your own DNS servers for resolution, use the Delegations section to configure your name servers.
+	</li>
+</ol>

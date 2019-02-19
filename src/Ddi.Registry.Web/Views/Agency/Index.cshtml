@@ -1,0 +1,65 @@
+﻿@model Ddi.Registry.Web.Models.AgencyOverviewModel
+
+@{
+    ViewBag.Title = Model.Agency.AgencyName;
+}
+
+<h2>@Model.Agency.AgencyName</h2>
+
+@Html.Partial("AgencyControl", Model.Agency)
+
+
+<h2>Contact Information</h2>
+@if (Model.AdminContact != null)
+{
+    <fieldset>
+		<legend>Administrative Contact</legend>
+    @Html.Partial("PersonControl", Model.AdminContact)
+	</fieldset>
+}
+
+@if (Model.TechnicalContact != null)
+{
+	<fieldset>
+    <legend>Technical Contact</legend>
+    @Html.Partial("PersonControl", Model.TechnicalContact)
+	</fieldset>
+}
+
+@if (Model.Assignments.Count() == 0)
+{
+	<h2>Sub Agency Assignments</h2>
+	<p>This agency has no sub agencies.</p>
+}
+else
+{
+	foreach (Ddi.Registry.Data.Assignment a in Model.Assignments)
+	{
+    <h2>@a.Name</h2>
+	
+    <h4>Services</h4>
+    
+		if (Model.Services[a.AssignmentId].Count() > 0)
+		{
+		@Html.Partial("ListServices", Model.Services[a.AssignmentId])
+		}
+		else
+		{
+	<text><p>No services are configured.</p></text>
+		}
+  
+		<h4>Foreign Name Server Delegations @if (!a.IsDelegated)
+									  {@Html.Raw("(Disabled)");
+									  }
+		</h4>
+    
+									  if (Model.Delegations[a.AssignmentId].Count() > 0)
+									  {
+			@Html.Partial("ListDelegations", Model.Delegations[a.AssignmentId])
+									  }
+									  else
+									  {
+		<p>No delegations are configured.</p>
+	}
+}
+}

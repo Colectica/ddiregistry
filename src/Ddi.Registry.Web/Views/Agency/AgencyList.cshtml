@@ -1,0 +1,54 @@
+﻿@model System.Collections.ObjectModel.Collection<Ddi.Registry.Data.Agency>
+
+@{
+    ViewBag.Title = "Agency List";
+}
+
+<h2>Agency Search Results</h2>
+
+@if (Model.Count == 0)
+{
+<h2>No Results Found</h2>
+}
+else
+{
+
+<table>
+    <tr>
+        <th>
+            AgencyName
+        </th>
+        <th>
+            DateCreated
+        </th>
+        <th>
+            LastModified
+        </th>
+        <th>
+            DateApproved
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>
+        @Html.ActionLink(item.AgencyName, "Index", new { agencyName = item.AgencyName })
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DateCreated)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.LastModified)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DateApproved)
+        </td>
+
+    </tr>
+}
+
+</table>
+
+}

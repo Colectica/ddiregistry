@@ -1,0 +1,18 @@
+﻿@model Ddi.Registry.Web.Models.SearchModel
+           
+@{
+}
+
+<h2>Welcome to the DDI Registry</h2>
+
+@Html.Partial("SearchControl", Model)
+
+<h2>Request a DDI agency ID</h2>
+<p>Follow these three quick steps to obtain a DDI agency identifier</p>
+<ol>
+<li>Create an account for your organization. <a href="/Account/Register">Register here.</a></li>
+<li>Request an Agency ID under the <a href="/Manage">Manage</a> tab.</li>
+<li>You will receive an email confirmation when the agency identifier is approved.</li>
+</ol>
+
+<p>See the Help page for @Html.ActionLink("detailed instructions", "Index", "Help").</p>

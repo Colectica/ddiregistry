@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Ddi.Registry.ZoneWriter" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="BaseZone" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">registry.ddialliance.org</Value>
+    </Setting>
+    <Setting Name="MasterNameserver" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">nsmaster.example.org</Value>
+    </Setting>
+    <Setting Name="Nameserver" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;ns000.example.org&lt;/string&gt;
+  &lt;string&gt;ns101.example.org&lt;/string&gt;
+  &lt;string&gt;ns120.example.org&lt;/string&gt;
+  &lt;string&gt;ns001.example.org&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="DefaultARecord" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.0.5</Value>
+    </Setting>
+    <Setting Name="ZoneFileLocation" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">H:\temp\</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

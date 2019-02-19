@@ -1,0 +1,25 @@
+﻿@model Ddi.Registry.Data.Person
+
+    @if (Model.Email != null)
+    {
+        @Gravatar.GetHtml(Model.Email, defaultImage: "mm")
+    }
+
+    <div>
+    @Html.DisplayFor(model => model.Name)  <br />
+	@Html.DisplayFor(model => model.Email)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Organization) @Html.DisplayFor(model => model.JobTitle)
+    </div>
+
+    <div class="display-field" style="clear: both;">
+        @Html.DisplayFor(model => model.StreetAddress) <br />
+        @Html.DisplayFor(model => model.City) @Html.DisplayFor(model => model.State) @Html.DisplayFor(model => model.Zip)<br />
+        @Html.DisplayFor(model => model.Country)
+    </div>    
+    <div class="display-field" style="clear: both;">
+        Phone: @Html.DisplayFor(model => model.Phone)<br />
+        HomePage: <a href="@Html.DisplayFor(model => model.HomePage)">@Html.DisplayFor(model => model.HomePage)</a>
+    </div>
+

@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "DDI Registry Source Code";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>DDI Registry Source Code</h2>
+
+<p>
+The source code for the DDI Registry is available under the LGPL, an Open Source license.
+</p>
+
+<p>
+Download: <a href="http://download.algenta.com/ddi/ddiregistry-1.41-src.zip">DDI Registry</a>
+</p>
+
+<h2>Purpose</h2>
+You can deploy the DDI Registry software on your own infrastructure to run your own registry service. You might want to do
+this if you would like to provide your own delegation and resolution services, instead of relying on the DDI Alliance's 
+registry service.
+
+<h2>Installation</h2>
+
+<h3>Step 1. Dependencies</h3>
+<p>The following should be installed on your system:</p>
+<ul>
+<li>.NET 4.0 Framework (the full version)</li>
+<li>IIS</li>
+</ul>
+
+<h3>Step 2. Database</h3>
+<p>Create two postgreSQL databases with the following names:</p>
+<ul>
+<li>ddi_registry</li>
+<li>ddi_registry_user</li>
+</ul>
+<p>Run the SQL commands in the following files to create the database structure:</p>
+<ul>
+<li>Ddi.Registry.Data/postgres-schema.sql.txt</li>
+<li>Ddi.Registry.Data/postgres-membership-schema.sql.txt</li>
+</ul>
+
+<h3>Step 3. Deploy Site Binaries</h3>
+<p>Extract the built solution files to a directory which IIS can access (e.g., c:\inetput\DdiRegistry).</p>
+
+<h3>Step 4. IIS Configuration</h3>
+
+<h4>Create a Site for DDI Registry</h4>
+<ol>
+<li>In IIS, choose your machine and select Add Web Site. Use the following settings:
+	<dl>
+		<dt>Site Name</dt><dd>MyRegistry</dd>
+		<dt>Physical path</dt><dd>the location where you extracted the DdiRegistry/ directory above</dd>
+		<dt>Binding</dt><dd>http</dd>
+		<dt>Hostname</dt><dd>your desired hostname</dd>
+	</dl>
+</li>
+<li>In the newly created Application Pool, make sure the .NET Framework Version is set to 4.0.</li>
+</ol>
+
+<h4>Update the Web.config file</h4>
+<p>In the Web.Config file at the root of your site, search for the "connectionStrings" element and update these to 
+point to your database.</p>
+
+<h3>Step 5. Integrate with DNS</h3>
+<p>The Ddi.Registry.ZoneWriter console application is used to integrate the contents of the DDI Registry's database
+with your DNS system. To use this, follow these instructions.</p>
+
+<p>The ZoneWriter works be writing a bind-compatible zone file. This file can be used by both 
+bind and ActiveDirectory.</p>
+
+<ol>
+<li>Update ZoneWriter's App.config file:
+	<ul>
+		<li>Update the DdiRegistry connection string to point to your databasde</li>
+		<li>Under the Ddi.Registry.ZoneWriter.Settings element, update the following properties:
+			<dl>
+				<dt>BaseZone</dt><dd>The name of the root, authoritative zone for the registry system. To work with the DDI Registry system, leave as registry.ddialliance.org</dd>
+				<dt>MasterName</dt><dd>The hostname of your primary nameserver</dd>
+				<dt>Nameserver</dt><dd>A list of hostnames of your nameservers</dd>
+				<dt>DefaultARecord</dt><dd>The A record for the hostname specified in the BaseZone setting</dd>
+				<dt>ZoneFileLocation</dt><dd>The location where your zone file will be written.</dd>
+			</dl>
+		</li>
+	</ul>
+</li>
+<li>Schedule the ZoneWrite to run on a regular basis (e.g., every 5 minutes).</li>
+<li>Set your DNS Server to use the zone file for its configuration.</li>
+</ol>
+
+<h2>Frequently Asked Questions</h2>
+<p>Nothing has really come up yet. <a href="mailto:ddiregistry@ddialliance.org">Get in touch with us</a> and we'll add answers to common questions as they come up.</p>

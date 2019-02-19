@@ -1,0 +1,23 @@
+﻿@model Ddi.Registry.Data.Delegation
+
+@{
+    ViewBag.Title = "Delete " + Model.NameServer;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete @Model.NameServer Delegation</h2>
+
+<h3>Are you sure you want to delete this delegation?</h3>
+<fieldset>
+    <div class="display-label">Name Server</div>
+    <div class="display-field">@Model.NameServer</div>
+</fieldset>
+@using (Html.BeginForm()) {
+    <p>
+		@Html.HiddenFor(d => d.DelegationId)
+        <input type="submit" value="Delete" /> |
+        @Html.ActionLink("Back to Assignment Page", "EditAssignment", new { assignmentId = Model.AssignmentId })
+    </p>
+}
+
+

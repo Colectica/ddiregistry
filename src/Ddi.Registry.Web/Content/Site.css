@@ -1,0 +1,207 @@
+﻿
+
+
+/* FORM LAYOUT ELEMENTS   
+----------------------------------------------------------*/
+
+fieldset 
+{
+    border:1px solid #ddd;
+    padding:0 1.4em 1.4em 1.4em;
+    margin:0 0 1.5em 0;
+}
+
+legend 
+{
+    font-size:1.2em;
+    font-weight: bold;
+}
+
+textarea 
+{
+    min-height: 75px;
+    width: 200px;
+}
+
+input[type="text"] 
+{
+    width: 200px;
+    border: 1px solid #CCC;
+}
+
+input[type="password"] 
+{
+    width: 200px;
+    border: 1px solid #CCC;
+}
+
+input[type="submit"]
+{
+	height: 31px;
+	padding: 6px 12px 6px 12px;
+}
+
+/* TABLE
+----------------------------------------------------------*/
+
+table 
+{
+  border: solid 1px #e8eef4;
+  border-collapse: collapse;
+}
+
+table td 
+{
+  padding: 5px;   
+  border: solid 1px #e8eef4;
+}
+
+table th
+{
+  padding: 6px 5px;
+  text-align: left;
+  background-color: #e8eef4; 
+  border: solid 1px #e8eef4;   
+}
+
+/* MISC  
+----------------------------------------------------------*/
+.clear
+{
+    clear: both;
+}
+
+.error
+{
+    color:Red;
+}
+
+#menucontainer
+{
+    margin-top:40px;
+}
+
+
+#logindisplay
+{
+    font-size:1.1em;
+    padding-top: 5px;
+    display:block;
+    text-align:right;
+    color:White;
+}
+
+#logindisplay a:link
+{
+    color: white;
+    text-decoration: underline;
+}
+
+#logindisplay a:visited
+{
+    color: white;
+    text-decoration: underline;
+}
+
+#logindisplay a:hover
+{
+    color: white;
+    text-decoration: none;
+}
+
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+.field-validation-error
+{
+    color: #ff0000;
+}
+
+.field-validation-valid
+{
+    display: none;
+}
+
+.input-validation-error
+{
+    border: 1px solid #ff0000;
+    background-color: #ffeeee;
+}
+
+.validation-summary-errors
+{
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.validation-summary-valid
+{
+    display: none;
+}
+
+/* Styles for editor and display helpers
+----------------------------------------------------------*/
+.display-label,
+.editor-label
+{
+	margin: 6px 0 0 0;
+	float: left;
+	clear: left;
+	width: 150px;
+	font-weight: bold;
+}
+
+.editor-label
+{
+	margin: 10px 0 0 0;
+}
+
+.display-field,
+.editor-field
+{
+	margin: 6px 0 0 0;
+	float: left;
+	clear: right;
+	max-width: 600px;
+}
+
+.text-box
+{
+    width: 200px;
+}
+
+.text-box.multi-line
+{
+    height: 6.5em;
+    width: 30em;
+}
+
+.tri-state
+{
+    width: 6em;
+}
+
+.editor-submit
+{
+	clear: both;
+	padding-top: 12px;
+}
+
+.searchBox
+{
+	height: 30px;
+	font-size: 16px;
+	padding: 3px;
+}
+
+dt
+{
+	margin-top: 6px;
+	font-style: italic;
+}
+
+label[title]
+{
+	border-bottom: 1px dotted gray;
+	background: url('/Content/img/info16.png') no-repeat;
+	padding-left: 20px;
+}

@@ -1,0 +1,63 @@
+﻿@model Ddi.Registry.Web.Models.AgencyOverviewModel
+
+@{
+    ViewBag.Title = Model.Agency.AgencyName;
+}
+
+<h2>@Model.Agency.AgencyName</h2>
+
+@Html.Partial("AgencyControl",Model.Agency)
+
+<h2>Sub Agency Assignments</h2>
+
+<p>@Html.ActionLink("Add sub agency assignment", "AddAssignment", new { agencyId = Model.Agency.AgencyId })</p>
+
+@if (Model.Assignments.Count() == 0)
+{
+	<p>No Sub Agencies have been assigned.</p>
+}
+else
+{
+<table>
+	<tr>
+		<th>Name</th>
+		<th>Services</th>
+		<th>Is Delegated</th>
+		<th></th>
+	</tr>
+@foreach (Ddi.Registry.Data.Assignment a in Model.Assignments)
+{	
+	<text>
+	<tr>
+		<td>@a.Name</td>
+		<td>@Model.Services[a.AssignmentId].Count()</td>
+		<td>@a.IsDelegated</td>
+		<td>
+			@Html.ActionLink("Edit", "EditAssignment", new { assignmentId = a.AssignmentId })
+			@if (a.Name != Model.Agency.AgencyName)
+   {
+			<text>| @Html.ActionLink("Delete", "DeleteAssignment", new { assignmentId = a.AssignmentId })</text>
+   }
+		</td>
+  </tr>
+  </text>
+}
+</table>
+}
+
+<h2>Contact Information</h2>
+@if (Model.AdminContact != null)
+{
+    <fieldset>
+    <legend>Admin Contact</legend>
+    @Html.Partial("PersonControl", Model.AdminContact)
+    </fieldset>
+}
+
+@if (Model.TechnicalContact != null)
+{
+    <fieldset>
+    <legend>Technical Contact</legend>
+    @Html.Partial("PersonControl", Model.TechnicalContact)
+    </fieldset>
+}

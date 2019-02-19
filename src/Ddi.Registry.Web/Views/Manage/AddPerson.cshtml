@@ -1,0 +1,13 @@
+﻿@model Ddi.Registry.Data.Person
+
+@{
+    ViewBag.Title = "Add a Person";
+}
+
+<h2>Add Contact Person</h2>
+
+@Html.Partial("EditPersonControl", Model)
+
+<div>
+    @Html.ActionLink("Back to Management Page", "Index")
+</div>
