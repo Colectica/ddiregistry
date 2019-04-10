@@ -88,9 +88,6 @@ namespace Ddi.Registry.Web.Controllers
                 agency.DateApproved = DateTime.UtcNow;
                 agency.LastModified = DateTime.UtcNow;
 
-                _context.Add(agency);
-
-
                 Assignment assignment = new Assignment()
                 {
                     Agency = agency,
