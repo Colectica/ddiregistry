@@ -90,6 +90,7 @@ namespace Ddi.Registry.Web.Controllers
 
                 Assignment assignment = new Assignment()
                 {
+                    AssignmentId = agencyId,
                     Agency = agency,
                     AgencyId = agency.AgencyId,
                     IsDelegated = false
@@ -102,7 +103,15 @@ namespace Ddi.Registry.Web.Controllers
                 var creator = await _context.Users.FindAsync(agency.CreatorId);
                 if(creator != null)
                 {
-                    await SendApprovedEmail(creator, agencyId);
+                    try
+                    {
+                        await SendApprovedEmail(creator, agencyId);
+                    }
+                    catch(Exception e)
+                    {
+                        
+                    }
+                    
                 }                
 
                 return RedirectToAction("Index", "Admin");

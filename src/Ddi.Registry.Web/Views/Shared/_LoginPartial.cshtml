@@ -14,6 +14,10 @@
             <a class="nav-link text-dark" asp-controller="Manage" asp-action="Index" title="Your Agencies">Your Agencies</a>
         </li>
 
+        <li class="nav-item">
+            <a  class="nav-link text-dark" href="https://ddialliance.org/contact-us" title="Contact DDI">Contact</a>
+        </li>
+
         @if (User.IsInRole("admin") || User.IsInRole("SuperAdmin"))
         {
             <li class="nav-item dropdown">
@@ -45,6 +49,9 @@
     }
     else
     {
+        <li class="nav-item">
+            <a  class="nav-link text-dark" href="https://ddialliance.org/contact-us" title="Contact DDI">Contact</a>
+        </li>
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
         </li>

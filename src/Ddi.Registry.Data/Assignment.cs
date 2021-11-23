@@ -29,5 +29,7 @@ namespace Ddi.Registry.Data
 
         public List<Delegation> Delegations { get; set; }
         public List<Service> Services { get; set; }
+
+        public List<HttpResolver> HttpResolvers { get; set; }
     }
 }

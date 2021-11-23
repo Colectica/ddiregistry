@@ -36,7 +36,7 @@ namespace Ddi.Registry.Web.Controllers
 
             //Agency agency = provider.GetAgency(agencyName);
             var agency = await _context.Agencies.SingleOrDefaultAsync(x => 
-                    string.Compare(x.AgencyId, agencyName, true) == 0 
+                    x.AgencyId == agencyName
                     && x.ApprovalState == ApprovalState.Approved);
 
             if (agency == null || agency.ApprovalState != ApprovalState.Approved)
@@ -77,9 +77,13 @@ namespace Ddi.Registry.Web.Controllers
                 await _context.Entry(a)
                     .Collection(x => x.Delegations)
                     .LoadAsync();
+                await _context.Entry(a)
+                    .Collection(x => x.HttpResolvers)
+                    .LoadAsync();
 
                 model.Services[a.AssignmentId] = a.Services;
                 model.Delegations[a.AssignmentId] = a.Delegations;
+                model.HttpResolvers[a.AssignmentId] = a.HttpResolvers;
             }
 
             return View(model);

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Ddi.Registry.Web.Services
 {
@@ -17,10 +18,11 @@ namespace Ddi.Registry.Web.Services
             if (html == null) throw new ArgumentNullException(nameof(html));
             if (expression == null) throw new ArgumentNullException(nameof(expression));
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
-            if (modelExplorer == null) throw new InvalidOperationException($"Failed to get model explorer for {ExpressionHelper.GetExpressionText(expression)}");
+            var expressionProvider = html.ViewContext?.HttpContext?.RequestServices?.GetService<ModelExpressionProvider>()
+                ?? new ModelExpressionProvider(html.MetadataProvider);
+            var modelExpression = expressionProvider.CreateModelExpression(html.ViewData, expression);
 
-            return new HtmlString(modelExplorer.Metadata.Description);
+            return new HtmlString(modelExpression.Metadata.Description);
         }
     }
 }

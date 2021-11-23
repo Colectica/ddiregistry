@@ -63,6 +63,12 @@ namespace Ddi.Registry.Data
             return result;
         }
 
+        public static async Task<List<HttpResolver>> GetHttpResolversForAssignment(this ApplicationDbContext _context, string assignmentId)
+        {
+            var result = await _context.HttpResolvers.Where(x => x.AssignmentId == assignmentId).ToListAsync();
+            return result;
+        }
+
 
         public static async Task<bool> ManagesService(this ApplicationDbContext _context, string userId, string serviceId)
         {
@@ -71,6 +77,17 @@ namespace Ddi.Registry.Data
 
             var assignment = await _context.Assignments.FindAsync(service.AssignmentId);
             if(assignment == null) { return false; }
+
+            return await _context.ManagesAgency(userId, assignment.AgencyId);
+        }
+
+        public static async Task<bool> ManagesHttpResolver(this ApplicationDbContext _context, string userId, string resolverId)
+        {
+            var resolver = await _context.HttpResolvers.FindAsync(resolverId);
+            if (resolver == null) { return false; }
+
+            var assignment = await _context.Assignments.FindAsync(resolver.AssignmentId);
+            if (assignment == null) { return false; }
 
             return await _context.ManagesAgency(userId, assignment.AgencyId);
         }

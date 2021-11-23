@@ -1,0 +1,67 @@
+﻿@using Ddi.Registry.Data
+@model Ddi.Registry.Data.HttpResolver
+
+@{
+    ViewData["Title"] = "Add a Http Resolver";
+}
+
+<h2>Add Http Resolver</h2>
+
+
+
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        @Html.HiddenFor(model => model.AssignmentId)
+        @Html.HiddenFor(model => model.Id)
+
+        <h2>Http Resolution Type</h2>
+        <div>
+            <p>The default resolution types are website, ddiitem, and ddiset.</p>
+        </div>
+        <div class="editor-label">
+            @Html.LabelFor(model => model.ResolutionType), double click for default options.
+        </div>
+        <div class="editor-field">
+            <input asp-for="ResolutionType" class="form-control" list="ResolutionTypeOptions" />
+            <datalist id="ResolutionTypeOptions">
+                <option value="@HttpResolver.ServiceNameWeb">@HttpResolver.ServiceNameWeb</option>
+                <option value="@HttpResolver.ServiceNameDdiItem">@HttpResolver.ServiceNameDdiItem</option>
+                <option value="@HttpResolver.ServiceNameDdiSet">@HttpResolver.ServiceNameDdiSet</option>            
+            </datalist>
+            @Html.ValidationMessageFor(model => model.ResolutionType)
+        </div>
+        <br/>
+
+        <h2>Url Template</h2>
+        <div>
+            <p>You can use the tags {agency} {identifier} {version} and {ddiurn} within the URL template.</p>
+            <p>For example, https://yourorganization.com/Item/{agency}/{identifier}/{version} </p>
+        </div>
+        <div class="editor-label">
+            @Html.LabelFor(model => model.UrlTemplate)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UrlTemplate)
+            @Html.ValidationMessageFor(model => model.UrlTemplate)
+        </div>
+
+        <br/>
+
+        <div class="editor-submit">
+            <p>
+                <input type="submit" value="Create" />
+            </p>
+        </div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to Assignment Page", "EditAssignment", new { assignmentId = Model.AssignmentId })
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

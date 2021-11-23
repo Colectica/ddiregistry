@@ -26,9 +26,9 @@ namespace Ddi.Registry.Web.Controllers
         private readonly IEmailSender _email;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public ManageController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailSender email, IHostingEnvironment hostingEnvironment)
+        public ManageController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailSender email, IWebHostEnvironment hostingEnvironment)
         {
             _context = context;
             _email = email;
@@ -128,7 +128,8 @@ namespace Ddi.Registry.Web.Controllers
                 Delegated = assignment.IsDelegated,
 				IsDelegated = assignment.IsDelegated,
 				Services = await _context.GetServicesForAssignment(assignment.AssignmentId),
-				Delegations = await _context.GetDelegationsForAssignment(assignment.AssignmentId)
+				Delegations = await _context.GetDelegationsForAssignment(assignment.AssignmentId),
+                HttpResolvers = await _context.GetHttpResolversForAssignment(assignment.AssignmentId)
             };
             return View(model);
         }
@@ -385,6 +386,157 @@ namespace Ddi.Registry.Web.Controllers
                 return RedirectToAction("ViewAgency", "Manage", new { agencyId = assignment.AgencyId });
             }
             return View(postService);
+        }
+
+
+
+        #endregion
+
+
+        #region HttpResolver
+        [Authorize]
+        public async Task<IActionResult> AddHttpResolver(string assignmentId)
+        {
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            Assignment assignment = await _context.Assignments.FindAsync(assignmentId);
+
+            if (assignment == null || !await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
+            HttpResolver resolver = new HttpResolver()
+            {
+                AssignmentId = assignmentId
+            };
+            return View(resolver);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DeleteHttpResolver(string resolverId)
+        {
+            //RegistryProvider provider = new RegistryProvider();
+            //string username = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            HttpResolver resolver = await _context.HttpResolvers.FindAsync(resolverId);
+            if (resolver == null)
+            {
+                return NotFound();
+            }
+            Assignment assignment = await _context.Assignments.FindAsync(resolver.AssignmentId);
+            if (assignment == null)
+            {
+                NotFound();
+            }
+            else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
+
+            return View(resolver);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteHttpResolver(HttpResolver postHttpResolver)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            HttpResolver resolver = await _context.HttpResolvers.FindAsync(postHttpResolver.Id);
+            if (resolver == null)
+            {
+                return NotFound();
+            }
+            Assignment assignment = await _context.Assignments.FindAsync(resolver.AssignmentId);
+            if (assignment == null)
+            {
+                NotFound();
+            }
+            else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+            {
+                return Forbid();
+            }
+
+            _context.HttpResolvers.Remove(resolver);
+            await _context.SaveChangesAsync();
+
+
+            return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddHttpResolver(HttpResolver postHttpResolver)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (ModelState.IsValid)
+            {
+                Assignment assignment = await _context.Assignments.FindAsync(postHttpResolver.AssignmentId);
+                if (assignment == null)
+                {
+                    NotFound();
+                }
+                else if (!await _context.ManagesAgency(userId, assignment.AgencyId))
+                {
+                    return Forbid();
+                }
+
+                // ensure the resolver does not already exist
+
+                HttpResolver resolver = new HttpResolver();
+                resolver.AssignmentId = postHttpResolver.AssignmentId;
+                resolver.ResolutionType = postHttpResolver.ResolutionType;
+                resolver.UrlTemplate = postHttpResolver.UrlTemplate;
+
+
+                _context.HttpResolvers.Add(resolver);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("EditAssignment", "Manage", new { assignmentId = assignment.AssignmentId });
+            }
+            return View(postHttpResolver);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> EditHttpResolver(string resolverId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (!await _context.ManagesHttpResolver(userId, resolverId))
+            {
+                return Forbid();
+            }
+            HttpResolver service = await _context.HttpResolvers.FindAsync(resolverId);
+            return View(service);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EditHttpResolver(HttpResolver postHttpResolver)
+        {
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if (ModelState.IsValid)
+            {
+                if (!await _context.ManagesHttpResolver(userId, postHttpResolver.Id))
+                {
+                    return Forbid();
+                }
+                var resolver = await _context.HttpResolvers.FindAsync(postHttpResolver.Id);
+
+                resolver.AssignmentId = postHttpResolver.AssignmentId;
+                resolver.ResolutionType = postHttpResolver.ResolutionType;
+                resolver.UrlTemplate = postHttpResolver.UrlTemplate;
+
+                await _context.SaveChangesAsync();
+
+                Assignment assignment = await _context.Assignments.FindAsync(resolver.AssignmentId);
+                return RedirectToAction("ViewAgency", "Manage", new { agencyId = assignment.AgencyId });
+            }
+            return View(postHttpResolver);
         }
 
 
@@ -743,13 +895,29 @@ namespace Ddi.Registry.Web.Controllers
                     var user = await _context.Users.FindAsync(userId);
                     if(user != null)
                     {
-                        await SendConfirmationEmail(user, addAgencyModel.AgencyId);
+                        try
+                        {
+                            await SendConfirmationEmail(user, addAgencyModel.AgencyId);
+                        }
+                        catch(Exception e)
+                        {
+                            
+                        }
+                        
                     }
 
                     var approvers = await _userManager.GetUsersInRoleAsync("admin");
                     foreach(var approver in approvers)
                     {
-                        await SendApproverEmail(approver, user, addAgencyModel.AgencyId);
+                        try
+                        {
+                            await SendApproverEmail(approver, user, addAgencyModel.AgencyId);
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                        
                     }
 
                     return RedirectToAction("Index", "Manage");
@@ -802,6 +970,8 @@ The DDI Alliance</p>";
                     .ThenInclude(i => i.Services)
                 .Include(i => i.Assignments)
                     .ThenInclude(i => i.Delegations)
+                .Include(i => i.Assignments)
+                    .ThenInclude(i => i.HttpResolvers)
                 .FirstOrDefaultAsync(x => x.AgencyId == agencyId);
             
             AgencyOverviewModel model = new AgencyOverviewModel();
@@ -814,6 +984,7 @@ The DDI Alliance</p>";
             {
                 model.Services[a.AssignmentId] = a.Services;
                 model.Delegations[a.AssignmentId] = a.Delegations;
+                model.HttpResolvers[a.AssignmentId] = a.HttpResolvers;
             }
 
             return View(model);

@@ -18,5 +18,6 @@ namespace Ddi.Registry.Data
         public DbSet<Delegation> Delegations { get; set; }
         public DbSet<ExportAction> ExportActions { get; set; }
         public DbSet<Service> Services { get; set; }
+        public DbSet<HttpResolver> HttpResolvers { get; set; }
     }
 }

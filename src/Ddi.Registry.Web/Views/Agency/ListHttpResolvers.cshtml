@@ -1,0 +1,27 @@
+﻿@model IEnumerable<Ddi.Registry.Data.HttpResolver>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                Resolution type
+            </th>
+            <th>
+                URI Template
+            </th>           
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ResolutionType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UrlTemplate)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

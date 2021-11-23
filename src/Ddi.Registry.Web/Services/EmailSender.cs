@@ -20,7 +20,7 @@ namespace Ddi.Registry.Web.Services
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(c.FromName, c.FromAddress));
-            message.To.Add(new MailboxAddress(email));
+            message.To.Add(MailboxAddress.Parse(email));
             message.Subject = subject;
 
             var bodyBuilder = new BodyBuilder();

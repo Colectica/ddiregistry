@@ -1,7 +1,7 @@
 ﻿@model Ddi.Registry.Web.Models.OverviewModel
 
 @{
-    ViewBag.Title = "Manage";
+    ViewData["Title"] = "Manage";
 	
 	var approvedAgencies = Model.Agencies.Where(m => m.ApprovalState == Ddi.Registry.Data.ApprovalState.Approved).ToList();
 	var requestedAgencies = Model.Agencies.Where(m => m.ApprovalState == Ddi.Registry.Data.ApprovalState.Requested).ToList();

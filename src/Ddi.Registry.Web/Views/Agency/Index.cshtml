@@ -1,7 +1,7 @@
 ﻿@model Ddi.Registry.Web.Models.AgencyOverviewModel
 
 @{
-    ViewBag.Title = Model.Agency.AgencyId;
+    ViewData["Title"] = Model.Agency.AgencyId;
 }
 
 <h2>@Model.Agency.AgencyId</h2>
@@ -34,7 +34,19 @@ else
     {
         <h2>@a.AssignmentId</h2>
 
-        <h4>Services</h4>
+        
+        <h4>Http Resolvers</h4>
+
+        if (Model.HttpResolvers[a.AssignmentId].Count() > 0)
+        {
+            <partial name="ListHttpResolvers" model="Model.HttpResolvers[a.AssignmentId]" />
+        }
+        else
+        {
+            <p>No http resolvers are configured.</p>
+        }
+
+        <h4>DNS SRV Services</h4>
 
         if (Model.Services[a.AssignmentId].Count() > 0)
         {

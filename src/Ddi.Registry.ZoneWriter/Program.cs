@@ -5,8 +5,6 @@ using System.Linq;
 using Ddi.Registry.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.FileExtensions;
-using Microsoft.Extensions.Configuration.Json;
 using System.Collections.Generic;
 
 namespace Ddi.Registry.ZoneWriter

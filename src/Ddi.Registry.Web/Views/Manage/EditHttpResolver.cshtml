@@ -1,0 +1,65 @@
+﻿@using Ddi.Registry.Data
+@model Ddi.Registry.Data.HttpResolver
+
+@{
+    ViewData["Title"] = "Edit " + Model.ResolutionType;
+}
+
+<h2>Edit @Model.ResolutionType</h2>
+
+
+
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+
+        @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.AssignmentId)
+
+        
+        <h2>Http Resolution Type</h2>
+        <div>
+            <p>The default resolution types are website, ddiitem, and ddiset.</p>
+        </div>
+        <div class="editor-label">
+            @Html.LabelFor(model => model.ResolutionType)
+        </div>
+        <div class="editor-field">
+            <input asp-for="ResolutionType" class="form-control" value="@Model.ResolutionType" readonly />
+            @Html.ValidationMessageFor(model => model.ResolutionType)
+        </div>
+        <br/>
+
+        <h2>Url Template</h2>
+        <div>
+            <p>You can use the tags {agency} {identifier} {version} and {ddiurn} within the URL template.</p>
+            <p>For example, https://yourorganization.com/Item/{agency}/{identifier}/{version} </p>
+        </div>
+        <div class="editor-label">
+            @Html.LabelFor(model => model.UrlTemplate)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UrlTemplate)
+            @Html.ValidationMessageFor(model => model.UrlTemplate)
+        </div>
+
+        <br/>
+
+
+        <div class="editor-submit">
+            <p>
+                <input type="submit" value="Save" />
+            </p>
+        </div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to Assignment Page", "EditAssignment", new { assignmentId = Model.AssignmentId })
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

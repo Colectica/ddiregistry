@@ -1,14 +1,14 @@
 ﻿@model Ddi.Registry.Web.Models.AgencyOverviewModel
 
 @{
-    ViewBag.Title = Model.Agency.AgencyId;
+    ViewData["Title"] = Model.Agency.AgencyId;
 }
 
 <h2>@Model.Agency.AgencyId</h2>
 
 <partial name="AgencyControl" for="Agency" />
 
-<h2>Sub Agency Assignments</h2>
+<h2>Agency and Sub Agency Assignments</h2>
 
 <p>@Html.ActionLink("Add sub agency assignment", "AddAssignment", new { agencyId = Model.Agency.AgencyId })</p>
 
@@ -22,8 +22,9 @@ else
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Services</th>
-                <th>Is Delegated</th>
+                <th>HTTP Resolution Services</th>
+                <th>DNS SRV Services</th>
+                <th>Is DNS Delegated</th>
                 <th></th>
             </tr>
         </thead>
@@ -33,6 +34,7 @@ else
                 <text>
                     <tr>
                         <td>@a.AssignmentId</td>
+                        <td>@Model.HttpResolvers[a.AssignmentId].Count()</td>
                         <td>@Model.Services[a.AssignmentId].Count()</td>
                         <td>@a.IsDelegated</td>
                         <td>

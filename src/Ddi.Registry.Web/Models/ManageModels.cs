@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Ddi.Registry.Data;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Ddi.Registry.Web.Models
 {
@@ -30,6 +31,7 @@ namespace Ddi.Registry.Web.Models
         {
             this.Services = new Dictionary<string, IEnumerable<Service>>();
             this.Delegations = new Dictionary<string, IEnumerable<Delegation>>();
+            this.HttpResolvers = new Dictionary<string, IEnumerable<HttpResolver>> ();
         }
         public Agency Agency { get; set; }
         public ApplicationUser AdminContact { get; set; }
@@ -38,6 +40,8 @@ namespace Ddi.Registry.Web.Models
 
         public Dictionary<string,IEnumerable<Service>> Services { get; set; }
         public Dictionary<string, IEnumerable<Delegation>> Delegations { get; set; }
+
+        public Dictionary<string, IEnumerable<HttpResolver>> HttpResolvers { get; set; }
     }
 
 	public class UnknownAgencyModel
@@ -99,10 +103,13 @@ namespace Ddi.Registry.Web.Models
 
         public bool Delegated { get; set; }
 
-		public IEnumerable<Service> Services { get; set; }
+        public IEnumerable<HttpResolver> HttpResolvers { get; set; }
+
+        public IEnumerable<Service> Services { get; set; }
 		public IEnumerable<Delegation> Delegations { get; set; }
 
 		public bool IsDelegated { get; set; }
 	}
+
 
 }

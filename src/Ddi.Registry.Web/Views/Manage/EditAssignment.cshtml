@@ -1,7 +1,7 @@
 ﻿@model Ddi.Registry.Web.Models.AssignmentModel
 
 @{
-    ViewBag.Title = "Edit " + Model.AssignmentId;
+    ViewData["Title"] = "Edit " + Model.AssignmentId;
 }
 
 <h2>Edit @Model.AssignmentId</h2>
@@ -19,14 +19,28 @@
             @Html.LabelFor(model => model.AssignmentId)
         </div>
         <div class="editor-field">
-            @Html.TextBoxFor(model => model.AssignmentId)
+            @Html.TextBoxFor(model => model.AssignmentId, new { @readonly = true })
             @Html.ValidationMessageFor(model => model.AssignmentId)
         </div>
 
     </fieldset>
 
+    
     <fieldset>
-        <legend>Services</legend>
+        <legend>HTTP Resolvers</legend>
+
+        <div style="margin-top: 12px;">
+            <p>@Html.ActionLink("Add a HTTP Resolver", "AddHttpResolver", new { assignmentId = Model.AssignmentId })</p>
+        </div>
+
+        @if (Model.HttpResolvers.Count() > 0)
+        {
+            <partial name="ListHttpResolvers" for="HttpResolvers" />
+        }
+    </fieldset>
+
+    <fieldset>
+        <legend>DNS SRV Services</legend>
 
         @if (Model.IsDelegated)
         {
