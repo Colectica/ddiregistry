@@ -21,5 +21,33 @@
       "Default": "Warning"
     }
   },
-  "AllowedHosts": "*"
+  "AllowedHosts": "*",
+  "IpRateLimiting": {
+    "EnableEndpointRateLimiting": false,
+    "StackBlockedRequests": false,
+    "HttpStatusCode": 429,
+    "IpWhitelist": [ "127.0.0.1", "::1/10", "192.168.0.0/24" ],
+    "GeneralRules": [
+      {
+        "Endpoint": "*",
+        "Period": "1s",
+        "Limit": 2
+      },
+      {
+        "Endpoint": "*",
+        "Period": "15m",
+        "Limit": 100
+      },
+      {
+        "Endpoint": "*",
+        "Period": "12h",
+        "Limit": 1000
+      },
+      {
+        "Endpoint": "*",
+        "Period": "7d",
+        "Limit": 10000
+      }
+    ]
+  }
 }

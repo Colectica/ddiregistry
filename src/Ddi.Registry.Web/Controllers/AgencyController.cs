@@ -92,8 +92,14 @@ namespace Ddi.Registry.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(SearchModel model)
         {
-            if (model != null)
+            if (model != null && model.Term != null)
             {
+
+                string search = model.Term.ToLowerInvariant();
+                if (search.StartsWith("urn:ddi:"))
+                {
+                    return await Lookup(search);
+                }
                 return await Search(model.Term);
             }
             else
@@ -105,7 +111,38 @@ namespace Ddi.Registry.Web.Controllers
         }
 
 
-        public async Task<IActionResult> Search(string term)
+        private async Task<IActionResult> Lookup(string urn)
+        {
+            if (string.IsNullOrWhiteSpace(urn))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                ResolverModel model = new ResolverModel();
+
+                DdiUrn ddiurn = null;
+                if (!DdiUrn.TryParse(urn, out ddiurn))
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                model.Urn = ddiurn;
+
+                Assignment assignment = await _context.Assignments.Where(x => x.AssignmentId == ddiurn.Agency).FirstOrDefaultAsync();
+                model.Assignment = assignment;
+
+                // load HTTP resolvers
+                await _context.Entry(assignment)
+                    .Collection(x => x.HttpResolvers)
+                    .LoadAsync();
+
+                model.HttpResolvers = assignment.HttpResolvers;
+
+                return View("Resolver", model);
+            }
+        }
+
+        private async Task<IActionResult> Search(string term)
         {
             //RegistryProvider provider = new RegistryProvider();
 
@@ -118,15 +155,6 @@ namespace Ddi.Registry.Web.Controllers
                 }
 
                 string search = term.ToLowerInvariant();
-                if (search.StartsWith("urn:ddi:"))
-                {
-                    search = search.Replace("urn:ddi:", "");
-                    int index = search.IndexOf(":");
-                    if (index != -1)
-                    {
-                        search = search.Substring(0, index);
-                    }
-                }
 
                 var agency = await _context.Agencies.SingleOrDefaultAsync(x => x.AgencyId == search);
                 if (agency == null)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Ddi.Registry.Data
 {
@@ -19,11 +20,14 @@ namespace Ddi.Registry.Data
 
         }
 
+        [JsonIgnore]
         [Required]
         public string Id { get; set; }
 
         [Required]
         public string AssignmentId { get; set; }
+
+        [JsonIgnore]
         public Assignment Assignment { get; set; }
 
         [Required]

@@ -9,6 +9,8 @@ namespace Ddi.Registry.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {            
+            /*
+            // requires postgresql v10+
             migrationBuilder.AlterColumn<int>(
                 name: "Id",
                 table: "AspNetUserClaims",
@@ -28,7 +30,7 @@ namespace Ddi.Registry.Data.Migrations
                 oldType: "integer")
                 .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
-            
+            */
             migrationBuilder.CreateTable(
                 name: "HttpResolvers",
                 columns: table => new
@@ -59,7 +61,7 @@ namespace Ddi.Registry.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "HttpResolvers");
-
+            /*
             migrationBuilder.AlterColumn<int>(
                 name: "Id",
                 table: "AspNetUserClaims",
@@ -78,7 +80,7 @@ namespace Ddi.Registry.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "integer")
                 .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);*/
         }
     }
 }

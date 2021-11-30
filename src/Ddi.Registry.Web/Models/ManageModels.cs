@@ -25,6 +25,13 @@ namespace Ddi.Registry.Web.Models
         public Dictionary<string, ApplicationUser> People { get; set; }
     }
 
+    public class ResolverModel
+    {
+        public Assignment Assignment { get; set; }
+        public List<HttpResolver> HttpResolvers { get; set; }
+        public DdiUrn Urn { get; set; }
+    }
+
     public class AgencyOverviewModel
     {
         public AgencyOverviewModel()
