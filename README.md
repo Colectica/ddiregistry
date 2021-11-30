@@ -2,7 +2,7 @@
 # DDI Agency Registry software
 
 ## Platform
-The DDI Agency Registry software runs on Linux, macOS, and Windows on the .NET Core 2.2 platform.
+The DDI Agency Registry software runs on Linux, macOS, and Windows on the .NET 6 platform.
 * https://www.microsoft.com/net/core/
 
 ## About
