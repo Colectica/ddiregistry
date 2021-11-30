@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/163341427.svg)](https://zenodo.org/badge/latestdoi/163341427)
 # DDI Agency Registry software
 
 ## Platform
