@@ -4,6 +4,7 @@ using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace Ddi.Registry.Web.Services
@@ -29,6 +30,7 @@ namespace Ddi.Registry.Web.Services
 
             using (var client = new SmtpClient())
             {
+                client.SslProtocols = SslProtocols.Ssl3 | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                 await client.ConnectAsync(c.Host, c.Port, c.EnableSSL);
