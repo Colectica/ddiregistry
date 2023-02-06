@@ -153,6 +153,16 @@ namespace Ddi.Registry.ZoneWriter
                 sb.AppendNs(nameserver);
             }
 
+
+            if (!string.IsNullOrWhiteSpace(zoneOptions.ExtraRecords) && File.Exists(zoneOptions.ExtraRecords))
+            {
+                foreach(var extraRecord in File.ReadLines(zoneOptions.ExtraRecords))
+                {
+                    sb.AppendLine(extraRecord);
+                }
+                sb.AppendLine();
+            }
+
             var agencies = context.Agencies.Where(x => x.ApprovalState == ApprovalState.Approved).OrderBy(item => item.AgencyId).ToList();
             sb.AppendLine();
             sb.AppendLine("; service definitions");
