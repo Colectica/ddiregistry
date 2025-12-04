@@ -8,11 +8,9 @@ services:
 
     environment:
       # DATABASE
-      ConnectionStrings__DefaultConnection: "Host=db;Database=${POSTGRES_USER:-postgres};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};"
+      ConnectionStrings__DefaultConnection: "Host=db;Database=ddi_registry;Username=postgres;Password=postgres;"
     ports:
       - "8000:80"
-    # volumes:
-    #   - ./:/app
     depends_on:
       - db
 
@@ -25,9 +23,9 @@ services:
 
     # Variables propres au service Postgres uniquement
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ddi_registry}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ddi_registry
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
     volumes:
       - ddi_registry_postgres_data:/var/lib/postgresql/data
