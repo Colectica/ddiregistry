@@ -1,0 +1,39 @@
+services:
+  ddiregistry:
+    image: ddiregistry:local
+    container_name: ddiregistry
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    environment:
+      # DATABASE
+      ConnectionStrings__DefaultConnection: "Host=db;Database=${POSTGRES_USER:-postgres};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};"
+    ports:
+      - "8000:80"
+    # volumes:
+    #   - ./:/app
+    depends_on:
+      - db
+
+  # -----------------------------------------------------
+  # POSTGRES DATABASE
+  # -----------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    container_name: db
+
+    # Variables propres au service Postgres uniquement
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ddi_registry}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+
+    volumes:
+      - ddi_registry_postgres_data:/var/lib/postgresql/data
+
+# ---------------------------------------------------------
+# VOLUMES
+# ---------------------------------------------------------
+volumes:
+  ddi_registry_postgres_data:
