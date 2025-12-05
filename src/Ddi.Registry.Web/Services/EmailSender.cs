@@ -1,6 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using MimeKit;
+using MimeKit.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,9 +25,7 @@ namespace Ddi.Registry.Web.Services
             message.To.Add(MailboxAddress.Parse(email));
             message.Subject = subject;
 
-            var bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = htmlMessage;
-            message.Body = bodyBuilder.ToMessageBody();
+            message.Body = new TextPart(TextFormat.Html) { Text = htmlMessage };
 
             using (var client = new SmtpClient())
             {

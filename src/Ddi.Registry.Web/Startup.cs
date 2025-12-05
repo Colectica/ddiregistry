@@ -50,13 +50,14 @@ namespace Ddi.Registry.Web
                 options.UseNpgsql(
                     Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<ApplicationUser>(config => 
+            services.AddIdentity<ApplicationUser, IdentityRole>(config => 
                 {
                     config.SignIn.RequireConfirmedEmail = false;
                 })
-                .AddRoles<IdentityRole>()
+                //.AddRoles<IdentityRole>()
                 //.AddDefaultUI(UIFramework.Bootstrap4)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders(); 
 
             var emailconfig = Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
             services.AddTransient<IEmailSender, EmailSender>(i => new EmailSender(emailconfig));

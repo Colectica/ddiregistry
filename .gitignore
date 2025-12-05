@@ -332,3 +332,5 @@ ASALocalRun/
 /src/Ddi.Registry.ZoneWriter/zonesettings.Development.json
 scripts/db-private.sql
 src/Ddi.Registry.Web/web.debug.config
+src/Ddi.Registry.Web/appsettings.json
+src/Ddi.Registry.ZoneWriter/zonesettings.json
