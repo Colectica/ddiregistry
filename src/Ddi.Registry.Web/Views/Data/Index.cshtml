@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Data";
+}
+
+<h2>Data</h2>
+
+<p>Download public data from the DDI Agency Registry.</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Download</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a asp-controller="Data" asp-action="DownloadAgencies">Agencies (JSON)</a></td>
+            <td>
+                All approved agencies and their sub-agency assignments, HTTP endpoints, DNS services,
+                and enabled name server delegations in one JSON file.
+            </td>
+        </tr>
+    </tbody>
+</table>
